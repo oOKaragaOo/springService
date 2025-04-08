@@ -1,0 +1,31 @@
+package com.example.springservice;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import java.util.Optional;
+
+@Service
+public class AuthService {
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    public AuthService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = new BCryptPasswordEncoder();
+    }
+
+    public User register(String name, String email, String password) {
+        String hashedPassword = passwordEncoder.encode(password);
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(hashedPassword);
+        return userRepository.save(user);
+    }
+
+    public Optional<User> authenticate(String email, String password) {
+        return userRepository.findByEmail(email)
+                .filter(user -> passwordEncoder.matches(password, user.getPassword()));
+    }
+}
+
