@@ -15,6 +15,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import java.util.List;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -28,13 +29,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ เปิด CORS
-                .csrf(AbstractHttpConfigurer::disable) // ✅ ปิด CSRF (เหมาะกับ API)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // ✅ ปล่อย `/auth/**`
-                        .anyRequest().authenticated()            // ✅ ที่เหลือ ต้อง login
+                        .requestMatchers(HttpMethod.OPTIONS, "/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/session").permitAll()
+                        .requestMatchers("/error").permitAll() // ✅ เพิ่มตรงนี้
+                        .anyRequest().authenticated()
                 );
-
         return http.build();
     }
 
@@ -42,14 +45,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:3000")); // อนุญาต Next.js
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // ✅ ต้องมี OPTIONS
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
 
 }
