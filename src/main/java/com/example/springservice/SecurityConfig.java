@@ -29,11 +29,16 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth // ✅
                         .requestMatchers(HttpMethod.OPTIONS, "/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/**").permitAll()
-                        .requestMatchers("/error").permitAll() // ✅ เพิ่มตรงนี้
+
+//                        .requestMatchers(HttpMethod.DELETE, "/auth/**").permitAll()
+//                        .requestMatchers(HttpMethod.PUT, "/auth/**").permitAll()
+//                        .requestMatchers(HttpMethod.PATCH, "/auth/**").permitAll()
+//                        .requestMatchers(HttpMethod.HEAD, "/auth/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 );
         return http.build();
@@ -43,8 +48,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // ✅ ต้องมี OPTIONS
+        config.setAllowedOrigins(List.of("http://localhost:3000"));// ✅
+        config.setAllowedMethods(List.of("GET", "POST", "PUT","PATCH","HEAD", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
 

@@ -15,7 +15,7 @@ public class AuthService {
     }
 
     public User register(String name, String email, String password) {
-        String hashedPassword = passwordEncoder.encode(password);
+        String hashedPassword = passwordEncoder.encode(password); // ✅
         User user = new User();
         user.setName(name);
         user.setEmail(email);
