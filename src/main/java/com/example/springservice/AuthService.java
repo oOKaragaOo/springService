@@ -27,5 +27,9 @@ public class AuthService {
         return userRepository.findByEmail(email)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()));
     }
+    public boolean userExists(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
 }
 
