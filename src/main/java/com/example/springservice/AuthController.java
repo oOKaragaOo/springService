@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -30,7 +32,7 @@ public class AuthController {
         if (authService.userExists(email)) {
             return ResponseEntity.status(409).body(Map.of("message", "Email already registered"));
         }
-        User user = authService.register(name, email, password);
+        User user = authService.register(name, email, password, role);
         SessionUtil.storeUserSession(httpRequest, user);
 
         return ResponseEntity.ok(Map.of("message", "User registered", "userId", user.getId()));
@@ -78,14 +80,37 @@ public class AuthController {
     public ResponseEntity<?> getUserById(@PathVariable String id) {
         System.out.println("----> 🟢 GET /auth/user/" + id + " called");
 
-        Optional<User> userOptional = authService.getUserById(id);
-        return userOptional.map(user -> ResponseEntity.ok(Map.of(
-                "id", user.getId(),
-                "name", user.getName(),
-                "email", user.getEmail(),
-                "role", user.getRole()
-        ))).orElseGet(() -> ResponseEntity.status(404).body(Map.of("message", "User not found")));
+        try {
+            Optional<User> userOptional = authService.getUserById(id);
+
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+
+                // Logging เพื่อตรวจสอบค่า
+                System.out.println("Fetched user: " + user);
+                System.out.println("Email: " + user.getEmail());
+
+                // ใช้ HashMap แทน Map.of เพื่อกัน null
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("id", user.getId());
+                userMap.put("name", user.getName());
+                userMap.put("email", user.getEmail());
+                userMap.put("role", user.getRole());
+
+                return ResponseEntity.ok(userMap);
+            } else {
+                return ResponseEntity.status(404).body(Map.of("message", "User not found"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace(); // log error
+            return ResponseEntity.status(500).body(Map.of(
+                    "message", "Internal Server Error",
+                    "error", e.getMessage()
+            ));
+        }
     }
+
 
     // ✅ API Email
     @GetMapping("/user/email/{email}")

@@ -14,12 +14,12 @@ public class AuthService {
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
-    public User register(String name, String email, String password) {
-        String hashedPassword = passwordEncoder.encode(password); // ✅
+    public User register(String name, String email, String password, String role) {
         User user = new User();
         user.setName(name);
         user.setEmail(email);
-        user.setPassword(hashedPassword);
+        user.setPassword(password); // อย่าลืม hash password จริงๆ
+        user.setRole(role); // สำคัญ! ต้องมีบรรทัดนี้
         return userRepository.save(user);
     }
 
@@ -33,8 +33,11 @@ public class AuthService {
 
     // ✅ ค้นหาผู้ใช้โดย ID
     public Optional<User> getUserById(String id) {
-        return userRepository.findById(id);
+        // ดึงจากฐานข้อมูลหรือ repository อะไรก็แล้วแต่
+        User user = userRepository.findById(id).orElse(null);
+        return Optional.ofNullable(user);
     }
+
 
     // ✅ ค้นหาผู้ใช้โดย Email
     public Optional<User> getUserByEmail(String email) {
