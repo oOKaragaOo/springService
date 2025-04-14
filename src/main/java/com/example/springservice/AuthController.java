@@ -2,10 +2,10 @@ package com.example.springservice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -60,7 +60,7 @@ public class AuthController {
         if (session != null && session.getAttribute("user") != null) {
             User user = (User) session.getAttribute("user");
             return ResponseEntity.ok(Map.of("user", Map.of(
-                    "name", user.getName(),
+                    "id", user.getId(),
                     "email", user.getEmail()
             )));
         }
@@ -72,13 +72,44 @@ public class AuthController {
         SessionUtil.clearUserSession(request);
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
+
+    // ✅ API  ID
+    @GetMapping("/user/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable String id) {
+        System.out.println("----> 🟢 GET /auth/user/" + id + " called");
+
+        Optional<User> userOptional = authService.getUserById(id);
+        return userOptional.map(user -> ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "name", user.getName(),
+                "email", user.getEmail(),
+                "role", user.getRole()
+        ))).orElseGet(() -> ResponseEntity.status(404).body(Map.of("message", "User not found")));
+    }
+
+    // ✅ API Email
+    @GetMapping("/user/email/{email}")
+    public ResponseEntity<?> getUserByEmail(@PathVariable String email) {
+        System.out.println("----> 🟢 GET /auth/user/email/" + email + " called");
+
+        Optional<User> userOptional = authService.getUserByEmail(email);
+        return userOptional.map(user -> ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "name", user.getName(),
+                "email", user.getEmail(),
+                "role", user.getRole()
+        ))).orElseGet(() -> ResponseEntity.status(404).body(Map.of("message", "User not found")));
+    }
 }
 
 
 class SessionUtil {
     public static void storeUserSession(HttpServletRequest request, User user) {
-        HttpSession session = request.getSession(true); // true = สร้างใหม่ถ้าไม่มี
+        if (user == null) return; // ✅  user shout not null
+
+        HttpSession session = request.getSession(true);
         session.setAttribute("user", user);
+        //session.setMaxInactiveInterval(30 * 60);  ✅  session timeout  30 min
     }
     public static void clearUserSession(HttpServletRequest request) {
         HttpSession session = request.getSession(false);

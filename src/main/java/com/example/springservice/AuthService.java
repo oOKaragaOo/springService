@@ -31,5 +31,14 @@ public class AuthService {
         return userRepository.findByEmail(email).isPresent();
     }
 
+    // ✅ ค้นหาผู้ใช้โดย ID
+    public Optional<User> getUserById(String id) {
+        return userRepository.findById(id);
+    }
+
+    // ✅ ค้นหาผู้ใช้โดย Email
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 }
 
