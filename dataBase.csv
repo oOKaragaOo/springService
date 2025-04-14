@@ -9,6 +9,7 @@ CREATE TABLE Users (
     role ENUM('admin', 'artist', 'customer') NOT NULL,
     profile_picture TEXT,
     description TEXT,
+    commission_status ENUM('open', 'closed') DEFAULT 'open', -- เปิด/ปิดรับงาน
     status ENUM('active', 'banned', 'pending') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -17,31 +18,71 @@ CREATE TABLE Users (
 
 CREATE TABLE Artist_Styles (
     style_id INT PRIMARY KEY AUTO_INCREMENT,
-    style_name VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT
+    style_name VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE Artist_Style_Mapping (
-    artist_id INT,
-    style_id INT,
-    PRIMARY KEY (artist_id, style_id),
-    FOREIGN KEY (artist_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (style_id) REFERENCES Artist_Styles(style_id) ON DELETE CASCADE
+    user_id INT NOT NULL,
+    style_id INT NOT NULL,
+    PRIMARY KEY (user_id, style_id),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (style_id) REFERENCES Artist_Styles(style_id)
 );
 
 CREATE TABLE Commissions (
     commission_id INT PRIMARY KEY AUTO_INCREMENT,
-    customer_id INT,
-    artist_id INT,
-    title VARCHAR(255) NOT NULL,
+    customer_id INT NOT NULL,
+    artist_id INT NOT NULL,
+    title VARCHAR(100) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
-    status ENUM('pending', 'in progress', 'completed', 'cancelled') DEFAULT 'pending',
+    deadline DATE,
+
+    status ENUM(
+        'requested',
+        'accepted',
+        'rejected',
+        'in_progress',
+        'delivered',
+        'completed',
+        'cancelled'
+    ) DEFAULT 'requested',
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (artist_id) REFERENCES Users(user_id) ON DELETE CASCADE
+
+    FOREIGN KEY (customer_id) REFERENCES Users(user_id),
+    FOREIGN KEY (artist_id) REFERENCES Users(user_id)
 );
+CREATE TABLE Commission_Files (
+    file_id INT PRIMARY KEY AUTO_INCREMENT,
+    commission_id INT NOT NULL,
+    artist_id INT NOT NULL,
+
+    file_url TEXT NOT NULL,
+    file_type ENUM('sketch', 'progress', 'final') NOT NULL,
+    status ENUM('pending', 'delivered', 'approved', 'rejected') DEFAULT 'pending',
+
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (commission_id) REFERENCES Commissions(commission_id),
+    FOREIGN KEY (artist_id) REFERENCES Users(user_id)
+);
+CREATE TABLE Commission_Briefs (
+    brief_id INT PRIMARY KEY AUTO_INCREMENT,
+    commission_id INT NOT NULL,
+    customer_id INT NOT NULL,
+
+    file_url TEXT NOT NULL,
+    file_type VARCHAR(50),
+    description TEXT,
+
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (commission_id) REFERENCES Commissions(commission_id),
+    FOREIGN KEY (customer_id) REFERENCES Users(user_id)
+);
+
 
 CREATE TABLE Payments (
     payment_id INT PRIMARY KEY AUTO_INCREMENT,
