@@ -33,7 +33,7 @@ public class AuthController {
         User user = authService.register(name, email, password);
         SessionUtil.storeUserSession(httpRequest, user);
 
-        return ResponseEntity.ok(Map.of("message", "User registered", "userId", user.getId()));
+        return ResponseEntity.ok(Map.of("message", "User registered", "userId", user.getUser_id()));
     }
 
     @PostMapping("/login")
@@ -45,7 +45,7 @@ public class AuthController {
                     SessionUtil.storeUserSession(httpRequest, user);
                     return ResponseEntity.ok(Map.of(
                             "message", "Login successful",
-                            "userId", user.getId()
+                            "userId", user.getUser_id()
                     ));
                 })
                 .orElse(ResponseEntity.status(401).body(Map.of("message", "Invalid credentials")));
@@ -60,7 +60,7 @@ public class AuthController {
         if (session != null && session.getAttribute("user") != null) {
             User user = (User) session.getAttribute("user");
             return ResponseEntity.ok(Map.of("user", Map.of(
-                    "id", user.getId(),
+                    "id", user.getUser_id(),
                     "email", user.getEmail()
             )));
         }
@@ -78,9 +78,9 @@ public class AuthController {
     public ResponseEntity<?> getUserById(@PathVariable String id) {
         System.out.println("----> 🟢 GET /auth/user/" + id + " called");
 
-        Optional<User> userOptional = authService.getUserById(id);
+        Optional<User> userOptional = authService.getUserById(Integer.valueOf(id));
         return userOptional.map(user -> ResponseEntity.ok(Map.of(
-                "id", user.getId(),
+                "id", user.getUser_id(),
                 "name", user.getName(),
                 "email", user.getEmail(),
                 "role", user.getRole()
@@ -94,7 +94,7 @@ public class AuthController {
 
         Optional<User> userOptional = authService.getUserByEmail(email);
         return userOptional.map(user -> ResponseEntity.ok(Map.of(
-                "id", user.getId(),
+                "id", user.getUser_id(),
                 "name", user.getName(),
                 "email", user.getEmail(),
                 "role", user.getRole()
