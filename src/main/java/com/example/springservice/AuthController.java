@@ -2,6 +2,7 @@ package com.example.springservice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -11,9 +12,12 @@ import java.util.Optional;
 @RequestMapping("/auth")
 public class AuthController {
     private final AuthService authService;
+    private final UserRepository userRepository;
 
-    public AuthController(AuthService authService) {
+
+    public AuthController(AuthService authService , UserRepository userRepository) {
         this.authService = authService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/register")
@@ -100,6 +104,35 @@ public class AuthController {
                 "role", user.getRole()
         ))).orElseGet(() -> ResponseEntity.status(404).body(Map.of("message", "User not found")));
     }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody User updatedUser, HttpServletRequest request) {
+        System.out.println("----> 🟡 PUT /auth/profile called");
+
+        Integer userId = SessionUtil.getUserIdFromSession(request);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        }
+
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
+        }
+
+        User existingUser = userOpt.get();
+
+        // อัปเดตเฉพาะข้อมูลที่ยอมให้แก้
+        existingUser.setName(updatedUser.getName());
+        existingUser.setProfile_picture(updatedUser.getProfile_picture());
+        existingUser.setDescription(updatedUser.getDescription());
+        existingUser.setCommission_status(updatedUser.getCommission_status());
+
+        userRepository.save(existingUser); // trigger @PreUpdate ให้อัตโนมัติ
+
+        return ResponseEntity.ok(Map.of("message", "Profile updated successfully", "user", existingUser));
+    }
+
+
 }
 
 
@@ -116,5 +149,12 @@ class SessionUtil {
         if (session != null) {
             session.invalidate();
         }
+    }
+    public static Integer getUserIdFromSession(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) return null;
+
+        User user = (User) session.getAttribute("user");
+        return user != null ? user.getUser_id() : null;
     }
 }

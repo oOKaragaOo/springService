@@ -55,9 +55,7 @@ public class User {
     }
 
     // --- ENUMS ---
-    public enum Role {
-        admin, artist, customer
-    }
+
 
     public enum CommissionStatus {
         open, closed
