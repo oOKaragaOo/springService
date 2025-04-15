@@ -17,10 +17,10 @@ public class AuthService {
     public User register(String name, String email, String password, String role) {
         String hashedPassword = passwordEncoder.encode(password); // ✅
         User user = new User();
-        user.setRole(role);
         user.setName(name);
         user.setEmail(email);
         user.setPassword(hashedPassword);
+        user.setRole(role);
         return userRepository.save(user);
     }
 
@@ -33,12 +33,9 @@ public class AuthService {
     }
 
     // ✅ ค้นหาผู้ใช้โดย ID
-    public Optional<User> getUserById(String id) {
-        // ดึงจากฐานข้อมูลหรือ repository อะไรก็แล้วแต่
-        User user = userRepository.findById(id).orElse(null);
-        return Optional.ofNullable(user);
+    public Optional<User> getUserById(Integer id) {
+        return userRepository.findById(id);
     }
-
 
     // ✅ ค้นหาผู้ใช้โดย Email
     public Optional<User> getUserByEmail(String email) {
