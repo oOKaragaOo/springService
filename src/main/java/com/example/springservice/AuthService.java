@@ -14,13 +14,13 @@ public class AuthService {
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
-    public User register(String name, String email, String password ) {
+    public User register(String name, String email, String password, String role) {
         String hashedPassword = passwordEncoder.encode(password); // ✅
         User user = new User();
         user.setName(name);
         user.setEmail(email);
         user.setPassword(hashedPassword);
-        user.setRole(User.Role.customer);
+        user.setRole(role);
         return userRepository.save(user);
     }
 
