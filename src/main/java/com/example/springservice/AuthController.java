@@ -11,13 +11,17 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
     private final AuthService authService;
     private final UserRepository userRepository;
+
 
 
     public AuthController(AuthService authService , UserRepository userRepository) {
         this.authService = authService;
         this.userRepository = userRepository;
+
+
     }
 
     @PostMapping("/register")
@@ -120,16 +124,18 @@ public class AuthController {
         }
 
         User existingUser = userOpt.get();
-
-        // อัปเดตเฉพาะข้อมูลที่ยอมให้แก้
+        // field update
         existingUser.setName(updatedUser.getName());
         existingUser.setProfile_picture(updatedUser.getProfile_picture());
         existingUser.setDescription(updatedUser.getDescription());
         existingUser.setCommission_status(updatedUser.getCommission_status());
 
-        userRepository.save(existingUser); // trigger @PreUpdate ให้อัตโนมัติ
-
-        return ResponseEntity.ok(Map.of("message", "Profile updated successfully", "user", existingUser));
+        userRepository.save(existingUser);
+        // ✅ Return DTO
+        return ResponseEntity.ok(Map.of(
+                "message", "Profile updated successfully",
+                "user", new UserProfileDTO(existingUser)
+        ));
     }
 
 
