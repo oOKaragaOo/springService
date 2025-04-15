@@ -15,11 +15,12 @@ public class AuthService {
     }
 
     public User register(String name, String email, String password, String role) {
+        String hashedPassword = passwordEncoder.encode(password); // ✅
         User user = new User();
+        user.setRole(role);
         user.setName(name);
         user.setEmail(email);
-        user.setPassword(password); // อย่าลืม hash password จริงๆ
-        user.setRole(role); // สำคัญ! ต้องมีบรรทัดนี้
+        user.setPassword(hashedPassword);
         return userRepository.save(user);
     }
 
