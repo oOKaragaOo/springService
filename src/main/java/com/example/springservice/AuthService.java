@@ -23,6 +23,13 @@ public class AuthService {
         user.setRole(role);
         return userRepository.save(user);
     }
+    public String encodePassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
+    }
+
+    public boolean matchesPassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
 
     public Optional<User> authenticate(String email, String password) {
         return userRepository.findByEmail(email)

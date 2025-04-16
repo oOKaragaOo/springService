@@ -1,5 +1,6 @@
 package com.example.springservice;
 
+import com.example.springservice.dto.UserProfileDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -14,8 +15,6 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserRepository userRepository;
-
-
 
     public AuthController(AuthService authService , UserRepository userRepository) {
         this.authService = authService;
@@ -59,7 +58,6 @@ public class AuthController {
                 .orElse(ResponseEntity.status(401).body(Map.of("message", "Invalid credentials")));
     }
 
-
     @GetMapping("/session")
     public ResponseEntity<?> session(HttpServletRequest request) {
         System.out.println("----> 🟢 GET /auth/session called");
@@ -81,6 +79,18 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteAccount(HttpServletRequest request) {
+        Integer userId = SessionUtil.getUserIdFromSession(request);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        }
+
+        userRepository.deleteById(userId);
+        SessionUtil.clearUserSession(request);
+
+        return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+    }
     // ✅ API  ID
     @GetMapping("/user/{id}")
     public ResponseEntity<?> getUserById(@PathVariable String id) {
@@ -109,58 +119,7 @@ public class AuthController {
         ))).orElseGet(() -> ResponseEntity.status(404).body(Map.of("message", "User not found")));
     }
 
-    @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestBody User updatedUser, HttpServletRequest request) {
-        System.out.println("----> 🟡 PUT /auth/profile called");
-
-        Integer userId = SessionUtil.getUserIdFromSession(request);
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
-        }
-
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
-        }
-
-        User existingUser = userOpt.get();
-        // field update
-        existingUser.setName(updatedUser.getName());
-        existingUser.setProfile_picture(updatedUser.getProfile_picture());
-        existingUser.setDescription(updatedUser.getDescription());
-        existingUser.setCommission_status(updatedUser.getCommission_status());
-
-        userRepository.save(existingUser);
-        // ✅ Return DTO
-        return ResponseEntity.ok(Map.of(
-                "message", "Profile updated successfully",
-                "user", new UserProfileDTO(existingUser)
-        ));
     }
 
 
-}
 
-
-class SessionUtil {
-    public static void storeUserSession(HttpServletRequest request, User user) {
-        if (user == null) return; // ✅  user shout not null
-
-        HttpSession session = request.getSession(true);
-        session.setAttribute("user", user);
-        //session.setMaxInactiveInterval(30 * 60);  ✅  session timeout  30 min
-    }
-    public static void clearUserSession(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-    }
-    public static Integer getUserIdFromSession(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) return null;
-
-        User user = (User) session.getAttribute("user");
-        return user != null ? user.getUser_id() : null;
-    }
-}
