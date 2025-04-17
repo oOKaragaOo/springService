@@ -30,7 +30,6 @@ public class AdminController {
         if (requesterId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
-
         User admin = userRepository.findById(requesterId).orElse(null);
         if (admin == null || !isAdmin(admin)) {
             return ResponseEntity.status(403).body(Map.of("error", "Access denied"));

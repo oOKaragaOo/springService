@@ -27,22 +27,9 @@ public class PostController {
     @Autowired
     private UserRepository userRepository;
 
-    private ResponseEntity<?> validateUser(HttpServletRequest request) {
-        //✅ SessionUtil vv
-        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-
-        User user = (User) validation.getBody();
-
-
-        return ResponseEntity.ok(user);
-    }
-
     @PostMapping
     public ResponseEntity<?> createPost(@RequestBody PostCreateDTO dto, HttpServletRequest request) {
-        ResponseEntity<?> validation = validateUser(request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-        User user = (User) validation.getBody();
+        User user = SessionUtil.requireSessionUser(userRepository, request);
 
         Post post = new Post();
         post.setAuthor(user);
@@ -72,39 +59,35 @@ public class PostController {
 
     @PostMapping("/{id}/like")
     public ResponseEntity<?> likePost(@PathVariable Integer id, HttpServletRequest request) {
-        //✅ SessionUtil vv
-        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-        User user = (User) validation.getBody();
+        User user = SessionUtil.requireSessionUser(userRepository, request);
 
         Optional<Post> postOpt = postRepository.findById(id);
         if (postOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Post not found"));
 
-        Like like = new Like();
-        like.setUser(user);
-        like.setPost(postOpt.get());
-        like.setLikedAt(LocalDateTime.now());
-        postOpt.get().getLikes().add(like);
+        try {
+            Like like = new Like();
+            like.setUser(user);
+            like.setPost(postOpt.get());
+            like.setLikedAt(LocalDateTime.now());
+            postOpt.get().getLikes().add(like);
 
-        postRepository.save(postOpt.get());
+            postRepository.save(postOpt.get());
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(Map.of("error", "u already like d post"));
+        }
         return ResponseEntity.ok(Map.of("message", "Post liked"));
     }
 
     @DeleteMapping("/{id}/like")
     public ResponseEntity<?> unlikePost(@PathVariable Integer id, HttpServletRequest request) {
-        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-        User user = (User) validation.getBody();
+        User user = SessionUtil.requireSessionUser(userRepository, request);
 
         Optional<Post> postOpt = postRepository.findById(id);
         if (postOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Post not found"));
 
         Post post = postOpt.get();
         Optional<Like> likeOpt = post.getLikes().stream()
-                .filter(like -> {
-                    assert user != null;
-                    return like.getUser().getUserId().equals(user.getUserId());
-                })
+                .filter(like -> like.getUser().getUserId().equals(user.getUserId()))
                 .findFirst();
 
         if (likeOpt.isEmpty()) {
@@ -115,12 +98,9 @@ public class PostController {
         postRepository.save(post);
         return ResponseEntity.ok(Map.of("message", "Post unliked"));
     }
-
     @PostMapping("/{id}/comment")
     public ResponseEntity<?> commentPost(@PathVariable Integer id, @RequestBody Map<String, String> body, HttpServletRequest request) {
-        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-        User user = (User) validation.getBody();
+        User user = SessionUtil.requireSessionUser(userRepository, request);
 
         Optional<Post> postOpt = postRepository.findById(id);
         if (postOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Post not found"));
@@ -143,9 +123,7 @@ public class PostController {
 
     @PostMapping("/{id}/share")
     public ResponseEntity<?> sharePost(@PathVariable Integer id, HttpServletRequest request) {
-        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-        User user = (User) validation.getBody();
+        User user = SessionUtil.requireSessionUser(userRepository, request);
 
         Optional<Post> postOpt = postRepository.findById(id);
         if (postOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Post not found"));
@@ -159,7 +137,6 @@ public class PostController {
         postRepository.save(postOpt.get());
         return ResponseEntity.ok(Map.of("message", "Post shared"));
     }
-
 
 
 }

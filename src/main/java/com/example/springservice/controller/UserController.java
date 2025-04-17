@@ -98,17 +98,8 @@ public class UserController {
 
     @PostMapping("/refresh-session")
     public ResponseEntity<?> refreshSession(HttpServletRequest request) {
-        //✅ SessionUtil vv
-        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-
-        User user = (User) validation.getBody();
-
-
+        User user = SessionUtil.requireSessionUser(userRepository, request);
         SessionUtil.storeUserSession(request, user);
-        if (user == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-        }
         return ResponseEntity.ok(Map.of("message", "Session refreshed", "user", new UserProfileDTO(user)));
     }
 
@@ -129,16 +120,9 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-
-
     @PostMapping("/{id}/follow")
     public ResponseEntity<?> followUser(@PathVariable Integer id, HttpServletRequest request) {
-        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-        User follower = (User) validation.getBody();
-        if (follower == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-        }
+        User follower = SessionUtil.requireSessionUser(userRepository, request);
         if (follower.getUserId().equals(id)) {
             return ResponseEntity.badRequest().body(Map.of("error", "You cannot follow yourself"));
         }
@@ -166,14 +150,9 @@ public class UserController {
 
     @DeleteMapping("/{id}/unfollow")
     public ResponseEntity<?> unfollowUser(@PathVariable Integer id, HttpServletRequest request) {
-        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-        User follower = (User) validation.getBody();
+        User follower = SessionUtil.requireSessionUser(userRepository, request);
 
         FollowId followId = new FollowId();
-        if (follower == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-        }
         followId.setFollowerId(follower.getUserId());
         followId.setFollowingId(id);
 
@@ -187,13 +166,8 @@ public class UserController {
 
     @GetMapping("/following")
     public ResponseEntity<?> getFollowing(HttpServletRequest request) {
-        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-        User user = (User) validation.getBody();
+        User user = SessionUtil.requireSessionUser(userRepository, request); // ✅ แทน 3 บรรทัด
 
-        if (user == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-        }
         List<UserFollows> following = userFollowsRepository.findAllByFollower_UserId(user.getUserId());
         List<String> usernames = following.stream().map(f -> f.getFollowing().getName()).toList();
 
@@ -202,17 +176,13 @@ public class UserController {
 
     @GetMapping("/followers")
     public ResponseEntity<?> getFollowers(HttpServletRequest request) {
-        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
-        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
-        User user = (User) validation.getBody();
+        User user = SessionUtil.requireSessionUser(userRepository, request); // ✅ แทน 3 บรรทัด
 
-        if (user == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-        }
         List<UserFollows> followers = userFollowsRepository.findAllByFollowing_UserId(user.getUserId());
         List<String> usernames = followers.stream().map(f -> f.getFollower().getName()).toList();
 
         return ResponseEntity.ok(Map.of("followers", usernames));
     }
+
 
 }
