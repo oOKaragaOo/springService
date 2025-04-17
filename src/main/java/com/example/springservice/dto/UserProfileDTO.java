@@ -1,6 +1,6 @@
 package com.example.springservice.dto;
 
-import com.example.springservice.User;
+import com.example.springservice.entites.User;
 
 public class UserProfileDTO {
     public Integer user_id;
@@ -13,7 +13,7 @@ public class UserProfileDTO {
     public String status;
 
     public UserProfileDTO(User user) {
-        this.user_id = user.getUser_id();
+        this.user_id = user.getUserId();
         this.name = user.getName();
         this.email = user.getEmail();
         this.profile_picture = user.getProfile_picture();

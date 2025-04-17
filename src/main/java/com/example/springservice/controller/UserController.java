@@ -1,24 +1,33 @@
 package com.example.springservice.controller;
 
 import com.example.springservice.*;
+import com.example.springservice.dto.PostResponseDTO;
 import com.example.springservice.dto.UserProfileDTO;
+import com.example.springservice.entites.*;
+import com.example.springservice.entites.User;
+import com.example.springservice.entites.UserFollows;
+import com.example.springservice.repo.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-
+    @Autowired
+    private PostRepository postRepository;
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private AuthService authService;
+    @Autowired
+    private UserFollowsRepository userFollowsRepository;
 
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody User updatedUser, HttpServletRequest request) {
@@ -89,13 +98,17 @@ public class UserController {
 
     @PostMapping("/refresh-session")
     public ResponseEntity<?> refreshSession(HttpServletRequest request) {
-        Integer userId = SessionUtil.getUserIdFromSession(request);
-        if (userId == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        //✅ SessionUtil vv
+        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
+        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
 
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        User user = (User) validation.getBody();
+
 
         SessionUtil.storeUserSession(request, user);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
         return ResponseEntity.ok(Map.of("message", "Session refreshed", "user", new UserProfileDTO(user)));
     }
 
@@ -107,6 +120,99 @@ public class UserController {
         }
 
         return ResponseEntity.ok(Map.of("user", new UserProfileDTO(sessionUser)));
+    }
+
+    @GetMapping("/posts/{userId}")
+    public ResponseEntity<?> getPostsByUserId(@PathVariable Integer userId) {
+        List<Post> posts = postRepository.findAllByAuthor_UserIdOrderByCreatedAtDesc(userId);
+        List<PostResponseDTO> response = posts.stream().map(PostResponseDTO::new).toList();
+        return ResponseEntity.ok(response);
+    }
+
+
+
+    @PostMapping("/{id}/follow")
+    public ResponseEntity<?> followUser(@PathVariable Integer id, HttpServletRequest request) {
+        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
+        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
+        User follower = (User) validation.getBody();
+        if (follower == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        if (follower.getUserId().equals(id)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "You cannot follow yourself"));
+        }
+
+        Optional<User> followingOpt = userRepository.findById(id);
+        if (followingOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+
+        FollowId followId = new FollowId();
+        followId.setFollowerId(follower.getUserId());
+        followId.setFollowingId(id);
+
+        if (userFollowsRepository.existsById(followId)) {
+            return ResponseEntity.ok(Map.of("message", "Already following"));
+        }
+
+        UserFollows follow = new UserFollows();
+        follow.setId(followId);
+        follow.setFollower(follower);
+        follow.setFollowing(followingOpt.get());
+        follow.setFollowDate(LocalDateTime.now());
+
+        userFollowsRepository.save(follow);
+        return ResponseEntity.ok(Map.of("message", "Followed successfully"));
+    }
+
+    @DeleteMapping("/{id}/unfollow")
+    public ResponseEntity<?> unfollowUser(@PathVariable Integer id, HttpServletRequest request) {
+        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
+        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
+        User follower = (User) validation.getBody();
+
+        FollowId followId = new FollowId();
+        if (follower == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        followId.setFollowerId(follower.getUserId());
+        followId.setFollowingId(id);
+
+        if (!userFollowsRepository.existsById(followId)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "You are not following this user"));
+        }
+
+        userFollowsRepository.deleteById(followId);
+        return ResponseEntity.ok(Map.of("message", "Unfollowed successfully"));
+    }
+
+    @GetMapping("/following")
+    public ResponseEntity<?> getFollowing(HttpServletRequest request) {
+        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
+        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
+        User user = (User) validation.getBody();
+
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        List<UserFollows> following = userFollowsRepository.findAllByFollower_UserId(user.getUserId());
+        List<String> usernames = following.stream().map(f -> f.getFollowing().getName()).toList();
+
+        return ResponseEntity.ok(Map.of("following", usernames));
+    }
+
+    @GetMapping("/followers")
+    public ResponseEntity<?> getFollowers(HttpServletRequest request) {
+        ResponseEntity<?> validation = SessionUtil.validateUser(userRepository, request);
+        if (!validation.getStatusCode().is2xxSuccessful()) return validation;
+        User user = (User) validation.getBody();
+
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        List<UserFollows> followers = userFollowsRepository.findAllByFollowing_UserId(user.getUserId());
+        List<String> usernames = followers.stream().map(f -> f.getFollower().getName()).toList();
+
+        return ResponseEntity.ok(Map.of("followers", usernames));
     }
 
 }

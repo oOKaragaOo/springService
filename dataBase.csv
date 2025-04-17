@@ -138,3 +138,59 @@ CREATE TABLE Reports (
     FOREIGN KEY (commission_id) REFERENCES Commissions(commission_id) ON DELETE SET NULL,
     FOREIGN KEY (resolved_by_admin_id) REFERENCES Users(user_id) ON DELETE SET NULL
 );
+=================================
+USE commission;
+-- 🔹
+CREATE TABLE Posts (
+    post_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    user_id INT NOT NULL,
+    caption TEXT,
+    image_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 🔹
+CREATE TABLE Likes (
+    like_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    post_id INT NOT NULL,
+    liked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES Posts(post_id) ON DELETE CASCADE,
+    UNIQUE(user_id, post_id) -- กันไลค์ซ้ำ
+);
+
+-- 🔹
+CREATE TABLE Comments (
+    comment_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    post_id INT NOT NULL,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES Posts(post_id) ON DELETE CASCADE
+);
+
+-- 🔹
+CREATE TABLE Shares (
+    share_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    user_id INT NOT NULL,
+    post_id INT NOT NULL,
+    shared_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES Posts(post_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 🔹
+CREATE TABLE User_Follows (
+    follower_id INT NOT NULL,
+    following_id INT NOT NULL,
+    follow_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, following_id),
+    FOREIGN KEY (follower_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (following_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+select * from posts
+
+

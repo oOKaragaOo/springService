@@ -1,4 +1,4 @@
-package com.example.springservice;
+package com.example.springservice.entites;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,9 +12,12 @@ import java.time.LocalDateTime;
 @Table(name = "Users")
 public class User {
 
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer user_id;
+    @Column(name = "user_id")
+    private Integer userId;
 
     @Column(nullable = false, length = 50)
     private String name;
@@ -66,8 +69,5 @@ public class User {
     }
 
     // --- GETTER/SETTER ---
-    // สามารถให้ IntelliJ / VS Code generate ให้อัตโนมัติได้
-
-
-    // หรือใช้ Lombok (@Getter @Setter @Data) ถ้าต้องการให้เขียนสั้น
+    // Lombok (@Getter @Setter @Data)
 }

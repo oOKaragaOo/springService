@@ -1,6 +1,7 @@
 package com.example.springservice;
 
-import com.example.springservice.dto.UserProfileDTO;
+import com.example.springservice.entites.User;
+import com.example.springservice.repo.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class AuthController {
         User user = authService.register(name, email, password, role);
         SessionUtil.storeUserSession(httpRequest, user);
 
-        return ResponseEntity.ok(Map.of("message", "User registered", "userId", user.getUser_id()));
+        return ResponseEntity.ok(Map.of("message", "User registered", "userId", user.getUserId()));
     }
 
     @PostMapping("/login")
@@ -52,7 +53,7 @@ public class AuthController {
                     SessionUtil.storeUserSession(httpRequest, user);
                     return ResponseEntity.ok(Map.of(
                             "message", "Login successful",
-                            "userId", user.getUser_id()
+                            "userId", user.getUserId()
                     ));
                 })
                 .orElse(ResponseEntity.status(401).body(Map.of("message", "Invalid credentials")));
@@ -66,7 +67,7 @@ public class AuthController {
         if (session != null && session.getAttribute("user") != null) {
             User user = (User) session.getAttribute("user");
             return ResponseEntity.ok(Map.of("user", Map.of(
-                    "id", user.getUser_id(),
+                    "id", user.getUserId(),
                     "email", user.getEmail()
             )));
         }
@@ -81,6 +82,7 @@ public class AuthController {
 
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteAccount(HttpServletRequest request) {
+        //✅ SessionUtil vv
         Integer userId = SessionUtil.getUserIdFromSession(request);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
@@ -98,7 +100,7 @@ public class AuthController {
 
         Optional<User> userOptional = authService.getUserById(Integer.valueOf(id));
         return userOptional.map(user -> ResponseEntity.ok(Map.of(
-                "id", user.getUser_id(),
+                "id", user.getUserId(),
                 "name", user.getName(),
                 "email", user.getEmail(),
                 "role", user.getRole()
@@ -112,7 +114,7 @@ public class AuthController {
 
         Optional<User> userOptional = authService.getUserByEmail(email);
         return userOptional.map(user -> ResponseEntity.ok(Map.of(
-                "id", user.getUser_id(),
+                "id", user.getUserId(),
                 "name", user.getName(),
                 "email", user.getEmail(),
                 "role", user.getRole()

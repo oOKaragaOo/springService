@@ -3,6 +3,8 @@ package com.example.springservice.controller;
 
 import com.example.springservice.*;
 import com.example.springservice.dto.*;
+import com.example.springservice.entites.User;
+import com.example.springservice.repo.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

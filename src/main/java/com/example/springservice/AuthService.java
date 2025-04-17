@@ -1,5 +1,7 @@
 package com.example.springservice;
 
+import com.example.springservice.entites.User;
+import com.example.springservice.repo.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
