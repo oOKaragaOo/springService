@@ -116,11 +116,9 @@ public class UserController {
 
     @GetMapping("/posts/{userId}")
     public ResponseEntity<?> getPostsByUserId(@PathVariable Integer userId , HttpServletRequest request) {
-//        List<Post> posts = postRepository.findAllByAuthor_UserIdOrderByCreatedAtDesc(userId);
-        User user = SessionUtil.requireSessionUser(userRepository, request);
-        List<Post> posts = postRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<Post> posts = postRepository.findAllByAuthor_UserIdOrderByCreatedAtDesc(userId);
         List<PostResponseDTO> response = posts.stream()
-                .map(post -> new PostResponseDTO(post, user.getUserId()))
+                .map(post -> new PostResponseDTO(post, userId))
                 .toList();
 
         return ResponseEntity.ok(response);
