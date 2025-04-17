@@ -43,18 +43,25 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllPosts() {
+    public ResponseEntity<?> getAllPosts(HttpServletRequest request) {
+        User user = SessionUtil.requireSessionUser(userRepository, request);
+
         List<Post> posts = postRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        List<PostResponseDTO> response = posts.stream().map(PostResponseDTO::new).toList();
+        List<PostResponseDTO> response = posts.stream()
+                .map(post -> new PostResponseDTO(post, user.getUserId()))
+                .toList();
+
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getPostById(@PathVariable Integer id) {
+    public ResponseEntity<?> getPostById(@PathVariable Integer id, HttpServletRequest request) {
+        User user = SessionUtil.requireSessionUser(userRepository, request);
+
         Optional<Post> postOpt = postRepository.findById(id);
         if (postOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Post not found"));
 
-        return ResponseEntity.ok(new PostResponseDTO(postOpt.get()));
+        return ResponseEntity.ok(new PostResponseDTO(postOpt.get(), user.getUserId()));
     }
 
     @PostMapping("/{id}/like")

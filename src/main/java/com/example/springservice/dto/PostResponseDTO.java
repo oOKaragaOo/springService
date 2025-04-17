@@ -12,8 +12,9 @@ public class PostResponseDTO {
     public Integer likeCount;
     public Integer commentCount;
     public LocalDateTime createdAt;
+    public Boolean likedByMe;
 
-    public PostResponseDTO(Post post) {
+    public PostResponseDTO(Post post, Integer currentUserId) {
         this.id = post.getId();
         this.caption = post.getCaption();
         this.imageUrl = post.getImageUrl();
@@ -21,5 +22,7 @@ public class PostResponseDTO {
         this.likeCount = post.getLikes().size();
         this.commentCount = post.getComments().size();
         this.createdAt = post.getCreatedAt();
+        this.likedByMe = post.getLikes().stream()
+                .anyMatch(like -> like.getUser().getUserId().equals(currentUserId));
     }
 }
