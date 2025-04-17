@@ -9,6 +9,7 @@ import com.example.springservice.entites.UserFollows;
 import com.example.springservice.repo.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -114,9 +115,14 @@ public class UserController {
     }
 
     @GetMapping("/posts/{userId}")
-    public ResponseEntity<?> getPostsByUserId(@PathVariable Integer userId) {
-        List<Post> posts = postRepository.findAllByAuthor_UserIdOrderByCreatedAtDesc(userId);
-        List<PostResponseDTO> response = posts.stream().map(PostResponseDTO::new).toList();
+    public ResponseEntity<?> getPostsByUserId(@PathVariable Integer userId , HttpServletRequest request) {
+//        List<Post> posts = postRepository.findAllByAuthor_UserIdOrderByCreatedAtDesc(userId);
+        User user = SessionUtil.requireSessionUser(userRepository, request);
+        List<Post> posts = postRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<PostResponseDTO> response = posts.stream()
+                .map(post -> new PostResponseDTO(post, user.getUserId()))
+                .toList();
+
         return ResponseEntity.ok(response);
     }
 

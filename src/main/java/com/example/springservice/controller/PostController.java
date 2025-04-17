@@ -42,17 +42,40 @@ public class PostController {
         return ResponseEntity.ok(Map.of("message", "Post created successfully"));
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllPosts(HttpServletRequest request) {
-        User user = SessionUtil.requireSessionUser(userRepository, request);
+////    /**
+////     * Not allow viewer get allPost.
+////     */
+//    @GetMapping
+//    public ResponseEntity<?> getAllPosts(HttpServletRequest request) {
+//        User user = SessionUtil.requireSessionUser(userRepository, request);
+//
+//        List<Post> posts = postRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+//        List<PostResponseDTO> response = posts.stream()
+//                .map(post -> new PostResponseDTO(post, user.getUserId()))
+//                .toList();
+//
+//        return ResponseEntity.ok(response);
+//    }
+    ////    /**
+    ////     * Allow viewer get allPosts.
+    ////     */
+@GetMapping
+public ResponseEntity<?> getAllPosts(HttpServletRequest request) {
+    User user = null;
+    try {
+        user = SessionUtil.requireSessionUser(userRepository, request);
+    } catch (Exception ignored) { }
 
-        List<Post> posts = postRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        List<PostResponseDTO> response = posts.stream()
-                .map(post -> new PostResponseDTO(post, user.getUserId()))
-                .toList();
+    List<Post> posts = postRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    User finalUser = user;
+    List<PostResponseDTO> response = posts.stream()
+            .map(post -> finalUser != null
+                    ? new PostResponseDTO(post, finalUser.getUserId())
+                    : new PostResponseDTO(post, null))
+            .toList();
+    return ResponseEntity.ok(response);
+}
 
-        return ResponseEntity.ok(response);
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getPostById(@PathVariable Integer id, HttpServletRequest request) {
