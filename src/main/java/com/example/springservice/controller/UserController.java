@@ -7,6 +7,7 @@ import com.example.springservice.entites.*;
 import com.example.springservice.entites.User;
 import com.example.springservice.entites.UserFollows;
 import com.example.springservice.repo.*;
+import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -112,24 +113,17 @@ public class UserController {
         return ResponseEntity.ok(Map.of("user", new UserProfileDTO(sessionUser)));
     }
 
-    @GetMapping("/{name}")
-    public ResponseEntity<?> getUserByName(@PathVariable String name, HttpServletRequest request) {
-        User currentUser = null;
-        try {
-            currentUser = SessionUtil.requireSessionUser(userRepository, request);
-        } catch (Exception ignored) {}
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUsersByName(@RequestParam String name, HttpServletRequest request) {
+        User currentUser = SessionUtil.requireSessionUser(userRepository, request);
+        System.out.println("----> searchUsersByName called");
+        List <User> users = userRepository.findByNameContainingIgnoreCase(name);
+        List<UserProfileDTO> response = users.stream()
+                .map(user -> new UserProfileDTO(user, currentUser.getUserId(), userFollowsRepository))
+                .toList();
 
-        Optional<User> userOpt = userRepository.findByName(name);
-        if (userOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "User not found"));
-
-        User target = userOpt.get();
-        if (currentUser != null) {
-            return ResponseEntity.ok(new UserProfileDTO(target, currentUser.getUserId(), userFollowsRepository));
-        } else {
-            return ResponseEntity.ok(new UserProfileDTO(target));
-        }
+        return ResponseEntity.ok(response);
     }
-
     @GetMapping("/posts/{userId}")
     public ResponseEntity<?> getPostsByUserId(@PathVariable Integer userId) {
         List<Post> posts = postRepository.findAllByAuthor_UserIdOrderByCreatedAtDesc(userId);
