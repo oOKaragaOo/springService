@@ -1,6 +1,8 @@
 package com.example.springservice.dto;
 
+import com.example.springservice.entites.FollowId;
 import com.example.springservice.entites.User;
+import com.example.springservice.repo.UserFollowsRepository;
 
 public class UserProfileDTO {
     public Integer user_id;
@@ -11,6 +13,7 @@ public class UserProfileDTO {
     public String commission_status;
     public String role;
     public String status;
+    public Boolean followedByMe;
 
     public UserProfileDTO(User user) {
         this.user_id = user.getUserId();
@@ -22,4 +25,17 @@ public class UserProfileDTO {
         this.role = user.getRole();
         this.status = user.getStatus().toString();
     }
+
+    public UserProfileDTO(User user, Integer currentUserId, UserFollowsRepository followsRepo) {
+        this(user);
+        if (currentUserId != null && !user.getUserId().equals(currentUserId)) {
+            FollowId id = new FollowId();
+            id.setFollowerId(currentUserId);
+            id.setFollowingId(user.getUserId());
+            this.followedByMe = followsRepo.existsById(id);
+        } else {
+            this.followedByMe = false;
+        }
+    }
 }
+

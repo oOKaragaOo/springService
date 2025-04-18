@@ -4,7 +4,8 @@ import com.example.springservice.SessionUtil;
 import com.example.springservice.dto.PostCreateDTO;
 import com.example.springservice.dto.PostResponseDTO;
 import com.example.springservice.entites.*;
-import com.example.springservice.repo.PostRepository;
+import com.example.springservice.repo.*;
+import com.example.springservice.repo.UserFollowsRepository;
 import com.example.springservice.repo.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,8 @@ public class PostController {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserFollowsRepository  userFollowsRepository;
 
     @PostMapping
     public ResponseEntity<?> createPost(@RequestBody PostCreateDTO dto, HttpServletRequest request) {
@@ -168,5 +171,22 @@ public ResponseEntity<?> getAllPosts(HttpServletRequest request) {
         return ResponseEntity.ok(Map.of("message", "Post shared"));
     }
 
+    @GetMapping("/feed")
+    public ResponseEntity<?> getFeed(HttpServletRequest request) {
+        User user = SessionUtil.requireSessionUser(userRepository, request);
 
+        List<UserFollows> following = userFollowsRepository.findAllByFollower_UserId(user.getUserId());
+        List<Integer> followingIds = following.stream()
+                .map(f -> f.getFollowing().getUserId())
+                .toList();
+
+        if (followingIds.isEmpty()) return ResponseEntity.ok(List.of());
+
+        List<Post> posts = postRepository.findAllByAuthor_UserIdInOrderByCreatedAtDesc(followingIds);
+        List<PostResponseDTO> response = posts.stream()
+                .map(post -> new PostResponseDTO(post, user.getUserId()))
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
 }
