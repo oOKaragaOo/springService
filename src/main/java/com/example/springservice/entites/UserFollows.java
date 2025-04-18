@@ -5,9 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-
+@Setter
 @Getter
 @Entity
+
 @Table(name = "user_follows")
 public class UserFollows {
     @EmbeddedId
@@ -23,7 +24,7 @@ public class UserFollows {
     @JoinColumn(name = "following_user_id", nullable = false)
     private User following;
 
-    @Setter
+
     @Column(name = "follow_date", nullable = false)
     private LocalDateTime followDate = LocalDateTime.now();
 
