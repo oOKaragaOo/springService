@@ -169,7 +169,7 @@ public class UserController {
 
     @GetMapping("/following")
     public ResponseEntity<?> getFollowing(HttpServletRequest request) {
-        User user = SessionUtil.requireSessionUser(userRepository, request); // ✅ แทน 3 บรรทัด
+        User user = SessionUtil.requireSessionUser(userRepository, request);
 
         List<UserFollows> following = userFollowsRepository.findAllByFollower_UserId(user.getUserId());
         List<String> usernames = following.stream().map(f -> f.getFollowing().getName()).toList();
@@ -179,7 +179,7 @@ public class UserController {
 
     @GetMapping("/followers")
     public ResponseEntity<?> getFollowers(HttpServletRequest request) {
-        User user = SessionUtil.requireSessionUser(userRepository, request); // ✅ แทน 3 บรรทัด
+        User user = SessionUtil.requireSessionUser(userRepository, request);
 
         List<UserFollows> followers = userFollowsRepository.findAllByFollowing_UserId(user.getUserId());
         List<String> usernames = followers.stream().map(f -> f.getFollower().getName()).toList();
@@ -187,5 +187,32 @@ public class UserController {
         return ResponseEntity.ok(Map.of("followers", usernames));
     }
 
+    @GetMapping("/{id}/followers")
+    public ResponseEntity<?> getFollowersOfUser(@PathVariable Integer id, HttpServletRequest request) {
+        User currentUser = SessionUtil.requireSessionUser(userRepository, request);
+        if (!currentUser.getRole().equals("admin") && !currentUser.getUserId().equals(id)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
+
+        List<UserFollows> followers = userFollowsRepository.findAllByFollowing_UserId(id);
+        List<UserProfileDTO> response = followers.stream()
+                .map(f -> new UserProfileDTO(f.getFollower(), currentUser.getUserId(), userFollowsRepository))
+                .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/following")
+    public ResponseEntity<?> getFollowingOfUser(@PathVariable Integer id, HttpServletRequest request) {
+        User currentUser = SessionUtil.requireSessionUser(userRepository, request);
+        if (!currentUser.getRole().equals("admin") && !currentUser.getUserId().equals(id)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
+
+        List<UserFollows> following = userFollowsRepository.findAllByFollower_UserId(id);
+        List<UserProfileDTO> response = following.stream()
+                .map(f -> new UserProfileDTO(f.getFollowing(), currentUser.getUserId(), userFollowsRepository))
+                .toList();
+        return ResponseEntity.ok(response);
+    }
 
 }
