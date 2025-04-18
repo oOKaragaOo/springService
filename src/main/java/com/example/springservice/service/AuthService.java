@@ -1,4 +1,4 @@
-package com.example.springservice;
+package com.example.springservice.service;
 
 import com.example.springservice.entites.User;
 import com.example.springservice.repo.UserRepository;

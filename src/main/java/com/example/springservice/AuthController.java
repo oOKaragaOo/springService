@@ -2,6 +2,7 @@ package com.example.springservice;
 
 import com.example.springservice.entites.User;
 import com.example.springservice.repo.UserRepository;
+import com.example.springservice.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;

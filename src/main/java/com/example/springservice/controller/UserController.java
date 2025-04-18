@@ -7,6 +7,7 @@ import com.example.springservice.entites.*;
 import com.example.springservice.entites.User;
 import com.example.springservice.entites.UserFollows;
 import com.example.springservice.repo.*;
+import com.example.springservice.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -105,6 +106,7 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(HttpServletRequest request) {
+        System.out.println("----> 🟢 GET /user/profile called");
         User sessionUser = (User) request.getSession().getAttribute("user");
         if (sessionUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
