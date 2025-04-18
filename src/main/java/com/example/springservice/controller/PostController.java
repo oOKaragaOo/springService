@@ -63,7 +63,7 @@ public class PostController {
     ////     * Allow viewer get allPosts.
     ////     */
 @GetMapping
-public ResponseEntity<?> getAllPosts(HttpServletRequest request) {
+    public ResponseEntity<?> getAllPosts(HttpServletRequest request) {
     User user = null;
     try {
         user = SessionUtil.requireSessionUser(userRepository, request);
@@ -88,6 +88,8 @@ public ResponseEntity<?> getAllPosts(HttpServletRequest request) {
 
         return ResponseEntity.ok(new PostResponseDTO(postOpt.get(), user.getUserId()));
     }
+
+
 
     @PostMapping("/{id}/like")
     public ResponseEntity<?> likePost(@PathVariable Integer id, HttpServletRequest request) {

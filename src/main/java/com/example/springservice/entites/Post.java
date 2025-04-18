@@ -26,6 +26,9 @@ public class Post {
     private String caption;
 
     @Column(columnDefinition = "TEXT")
+    private  String content;
+
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 
     @Column(nullable = false)

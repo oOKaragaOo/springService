@@ -1,8 +1,10 @@
 package com.example.springservice.dto;
 
+import com.example.springservice.entites.Comment;
 import com.example.springservice.entites.Post;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PostResponseDTO {
     public Integer id;
@@ -13,6 +15,7 @@ public class PostResponseDTO {
     public Integer commentCount;
     public LocalDateTime createdAt;
     public Boolean likedByMe;
+    public List<String> comments;
 
     public PostResponseDTO(Post post, Integer currentUserId) {
         this.id = post.getId();
@@ -22,7 +25,10 @@ public class PostResponseDTO {
         this.likeCount = post.getLikes().size();
         this.commentCount = post.getComments().size();
         this.createdAt = post.getCreatedAt();
-        this.likedByMe = post.getLikes().stream()
+        this.likedByMe = currentUserId != null && post.getLikes().stream()
                 .anyMatch(like -> like.getUser().getUserId().equals(currentUserId));
+        this.comments = post.getComments().stream()
+                .map(Comment::getContent)
+                .toList();
     }
 }

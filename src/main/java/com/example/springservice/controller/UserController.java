@@ -7,7 +7,6 @@ import com.example.springservice.entites.*;
 import com.example.springservice.entites.User;
 import com.example.springservice.entites.UserFollows;
 import com.example.springservice.repo.*;
-import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -113,6 +112,16 @@ public class UserController {
         return ResponseEntity.ok(Map.of("user", new UserProfileDTO(sessionUser)));
     }
 
+    @GetMapping("/posts/{userId}") // for profile
+    public ResponseEntity<?> getPostsByUserId(@PathVariable Integer userId) {
+        List<Post> posts = postRepository.findAllByAuthor_UserIdOrderByCreatedAtDesc(userId);
+        List<PostResponseDTO> response = posts.stream()
+                .map(post -> new PostResponseDTO(post, userId))
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<?> searchUsersByName(@RequestParam String name, HttpServletRequest request) {
         User currentUser = SessionUtil.requireSessionUser(userRepository, request);
@@ -120,15 +129,6 @@ public class UserController {
         List <User> users = userRepository.findByNameContainingIgnoreCase(name);
         List<UserProfileDTO> response = users.stream()
                 .map(user -> new UserProfileDTO(user, currentUser.getUserId(), userFollowsRepository))
-                .toList();
-
-        return ResponseEntity.ok(response);
-    }
-    @GetMapping("/posts/{userId}")
-    public ResponseEntity<?> getPostsByUserId(@PathVariable Integer userId) {
-        List<Post> posts = postRepository.findAllByAuthor_UserIdOrderByCreatedAtDesc(userId);
-        List<PostResponseDTO> response = posts.stream()
-                .map(post -> new PostResponseDTO(post, userId))
                 .toList();
 
         return ResponseEntity.ok(response);
