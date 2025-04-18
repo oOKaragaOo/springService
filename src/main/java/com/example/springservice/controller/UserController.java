@@ -109,8 +109,25 @@ public class UserController {
         if (sessionUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
-
         return ResponseEntity.ok(Map.of("user", new UserProfileDTO(sessionUser)));
+    }
+
+    @GetMapping("/{name}")
+    public ResponseEntity<?> getUserByName(@PathVariable String name, HttpServletRequest request) {
+        User currentUser = null;
+        try {
+            currentUser = SessionUtil.requireSessionUser(userRepository, request);
+        } catch (Exception ignored) {}
+
+        Optional<User> userOpt = userRepository.findByName(name);
+        if (userOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+
+        User target = userOpt.get();
+        if (currentUser != null) {
+            return ResponseEntity.ok(new UserProfileDTO(target, currentUser.getUserId(), userFollowsRepository));
+        } else {
+            return ResponseEntity.ok(new UserProfileDTO(target));
+        }
     }
 
     @GetMapping("/posts/{userId}")
@@ -141,10 +158,11 @@ public class UserController {
             return ResponseEntity.ok(Map.of("message", "Already following"));
         }
 
+        User following = followingOpt.get();
+
         UserFollows follow = new UserFollows();
-        follow.setId(followId);
-        follow.setFollower(follower);
-        follow.setFollowing(followingOpt.get());
+        follow.setFollower(follower); // auto set followerId in FollowId
+        follow.setFollowing(following); // auto set followingId in FollowId
         follow.setFollowDate(LocalDateTime.now());
 
         userFollowsRepository.save(follow);

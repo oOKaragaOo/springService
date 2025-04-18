@@ -79,7 +79,6 @@ public ResponseEntity<?> getAllPosts(HttpServletRequest request) {
     return ResponseEntity.ok(response);
 }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<?> getPostById(@PathVariable Integer id, HttpServletRequest request) {
         User user = SessionUtil.requireSessionUser(userRepository, request);
@@ -131,6 +130,7 @@ public ResponseEntity<?> getAllPosts(HttpServletRequest request) {
         postRepository.save(post);
         return ResponseEntity.ok(Map.of("message", "Post unliked"));
     }
+
     @PostMapping("/{id}/comment")
     public ResponseEntity<?> commentPost(@PathVariable Integer id, @RequestBody Map<String, String> body, HttpServletRequest request) {
         User user = SessionUtil.requireSessionUser(userRepository, request);

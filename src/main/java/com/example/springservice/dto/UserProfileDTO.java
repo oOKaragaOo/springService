@@ -13,7 +13,8 @@ public class UserProfileDTO {
     public String commission_status;
     public String role;
     public String status;
-    public Boolean followedByMe;
+    public Boolean followedByMe; // ✅
+    public Integer followerCount; // ✅
 
     public UserProfileDTO(User user) {
         this.user_id = user.getUserId();
@@ -24,6 +25,7 @@ public class UserProfileDTO {
         this.commission_status = user.getCommission_status().toString();
         this.role = user.getRole();
         this.status = user.getStatus().toString();
+        this.followerCount = 0; // default
     }
 
     public UserProfileDTO(User user, Integer currentUserId, UserFollowsRepository followsRepo) {
@@ -36,6 +38,9 @@ public class UserProfileDTO {
         } else {
             this.followedByMe = false;
         }
+
+        this.followerCount = followsRepo.findAllByFollowing_UserId(user.getUserId()).size();
     }
 }
+
 
