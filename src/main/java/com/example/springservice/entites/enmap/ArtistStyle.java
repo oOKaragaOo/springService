@@ -17,4 +17,5 @@ public class ArtistStyle {
 
     @Column(nullable = false, length = 50)
     private String styleName;
+
 }
