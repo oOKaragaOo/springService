@@ -30,9 +30,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth // ✅
-                        .requestMatchers(HttpMethod.OPTIONS, "/auth/**","/user/**","/admin/**","/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/auth/**","/user/**","/admin/**","/posts/**","/guest/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/**","/user/**","/admin/**","/posts/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth/**","/user/**","/admin/**","/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/**","/user/**","/admin/**","/posts/**" ,"/guest/**").permitAll()
 
                         .requestMatchers(HttpMethod.DELETE, "/auth/**","/user/**","/admin/**","/posts/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/auth/**","/user/**","/admin/**","/posts/**").permitAll()

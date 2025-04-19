@@ -1,15 +1,13 @@
 package com.example.springservice.controller;
 
 import com.example.springservice.*;
-import com.example.springservice.dto.PostResponseDTO;
-import com.example.springservice.dto.UserProfileDTO;
+import com.example.springservice.dto.*;
 import com.example.springservice.entites.*;
-import com.example.springservice.entites.User;
-import com.example.springservice.entites.UserFollows;
 import com.example.springservice.repo.*;
-import com.example.springservice.service.AuthService;
+import com.example.springservice.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -229,4 +227,52 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+}
+
+@RestController
+@RequestMapping("/guest")
+class GuestController {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private UserFollowsRepository userFollowsRepository;
+
+    // 🔹 1. Get All Users (guest view)
+    @GetMapping("/users")
+    public ResponseEntity<?> getAllUsers() {
+        List<User> users = userRepository.findAllSortedByName();
+        List<UserPublicDTO> response = users.stream().map(UserPublicDTO::new).toList();
+        return ResponseEntity.ok(response);
+    }
+
+    // 🔹 2. Search Users by Name (guest view)
+    @GetMapping("/users/search")
+    public ResponseEntity<?> searchUsersByName(@RequestParam String name) {
+        List<User> users = userRepository.searchByNameSorted(name);
+        List<UserPublicDTO> response = users.stream().map(UserPublicDTO::new).toList();
+        return ResponseEntity.ok(response);
+    }
+
+    // 🔹 3. Get All Posts (guest feed)
+    @GetMapping("/posts")
+    public ResponseEntity<?> getAllPosts() {
+        List<Post> posts = postRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<PostResponseDTO> response = posts.stream()
+                .map(post -> new PostResponseDTO(post, null))
+                .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    // 🔹 4. Get Post by ID (guest view)
+    @GetMapping("/posts/{id}")
+    public ResponseEntity<?> getPostById(@PathVariable Integer id) {
+        Optional<Post> postOpt = postRepository.findById(id);
+        if (postOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Post not found"));
+        return ResponseEntity.ok(new PostResponseDTO(postOpt.get(), null));
+    }
 }
