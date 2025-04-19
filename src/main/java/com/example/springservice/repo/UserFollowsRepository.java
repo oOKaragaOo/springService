@@ -1,7 +1,7 @@
 package com.example.springservice.repo;
 
-import com.example.springservice.entites.*;
 import com.example.springservice.entites.UserFollows;
+import com.example.springservice.entites.enmap.FollowId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,5 +1,6 @@
 package com.example.springservice.entites;
 
+import com.example.springservice.entites.enmap.FollowId;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

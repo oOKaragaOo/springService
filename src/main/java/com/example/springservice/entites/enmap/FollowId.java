@@ -1,4 +1,4 @@
-package com.example.springservice.entites;
+package com.example.springservice.entites.enmap;
 
 import jakarta.persistence.Embeddable;
 import lombok.Getter;

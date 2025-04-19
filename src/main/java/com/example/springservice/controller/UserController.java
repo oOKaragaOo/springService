@@ -3,6 +3,7 @@ package com.example.springservice.controller;
 import com.example.springservice.*;
 import com.example.springservice.dto.*;
 import com.example.springservice.entites.*;
+import com.example.springservice.entites.enmap.FollowId;
 import com.example.springservice.repo.*;
 import com.example.springservice.service.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +31,7 @@ public class UserController {
 
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody User updatedUser, HttpServletRequest request) {
-        System.out.println("----> 🟡 PUT /auth/profile called");
+        System.out.println("----> 🟡 PUT User update profile //called//");
 
         Integer userId = SessionUtil.getUserIdFromSession(request);
         if (userId == null) {
@@ -104,7 +105,7 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(HttpServletRequest request) {
-        System.out.println("----> 🟢 GET /user/profile called");
+        System.out.println("----> 🟢 GET User profile called");
         User sessionUser = (User) request.getSession().getAttribute("user");
         if (sessionUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
@@ -114,6 +115,7 @@ public class UserController {
 
     @GetMapping("/posts/{userId}") // for profile
     public ResponseEntity<?> getPostsByUserId(@PathVariable Integer userId) {
+        System.out.println("----> 🟢 GET User get Post by Id //called//");
         List<Post> posts = postRepository.findAllByAuthor_UserIdOrderByCreatedAtDesc(userId);
         List<PostResponseDTO> response = posts.stream()
                 .map(post -> new PostResponseDTO(post, userId))
@@ -229,6 +231,7 @@ public class UserController {
 
 }
 
+// ✅ GuestController.java
 @RestController
 @RequestMapping("/guest")
 public class GuestController {
@@ -293,3 +296,4 @@ public class GuestController {
         return ResponseEntity.ok(dto);
     }
 }
+

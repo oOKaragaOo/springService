@@ -1,8 +1,8 @@
 package com.example.springservice;
 
-import com.example.springservice.entites.User;
-import com.example.springservice.repo.UserRepository;
-import com.example.springservice.service.AuthService;
+import com.example.springservice.entites.*;
+import com.example.springservice.repo.*;
+import com.example.springservice.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -59,6 +59,7 @@ public class AuthController {
                 })
                 .orElse(ResponseEntity.status(401).body(Map.of("message", "Invalid credentials")));
     }
+
 
     @GetMapping("/session")
     public ResponseEntity<?> session(HttpServletRequest request) {

@@ -1,6 +1,6 @@
 package com.example.springservice.dto;
 
-import com.example.springservice.entites.FollowId;
+import com.example.springservice.entites.enmap.FollowId;
 import com.example.springservice.entites.User;
 import com.example.springservice.repo.UserFollowsRepository;
 
