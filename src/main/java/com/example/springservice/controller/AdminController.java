@@ -95,6 +95,7 @@ public class AdminController {
 
         return ResponseEntity.ok(new ReportAdminDTO(reportOpt.get()));
     }
+
     @PutMapping("/reports/{id}")
     public ResponseEntity<?> resolveReport(@PathVariable Integer id, @RequestBody Map<String, String> body, HttpServletRequest request) {
         User admin = SessionUtil.requireSessionUser(userRepository, request);

@@ -71,6 +71,16 @@ public class NotificationService {
         notis.forEach(n -> n.setIsRead(true));
         notificationRepository.saveAll(notis);
     }
+    public void send(User user, Notification.NotificationType  type, String message) {
+        Notification noti = new Notification();
+        noti.setUser(user);
+        noti.setType(type);
+        noti.setMessage(message);
+        noti.setCreatedAt(LocalDateTime.now());
+        notificationRepository.save(noti);
+    }
+
+
 }
 
 

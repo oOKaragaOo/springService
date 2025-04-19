@@ -3,6 +3,7 @@ package com.example.springservice.controller;
 import com.example.springservice.SessionUtil;
 import com.example.springservice.dto.NotificationDTO;
 import com.example.springservice.entites.User;
+import com.example.springservice.repo.NotificationRepository;
 import com.example.springservice.repo.UserRepository;
 import com.example.springservice.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,9 @@ public class NotificationController {
 
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private NotificationRepository notificationRepository;
+
 
     @GetMapping
     public ResponseEntity<?> getNotifications(HttpServletRequest request) {
@@ -43,6 +47,15 @@ public class NotificationController {
         User user = SessionUtil.requireSessionUser(userRepository, request);
         notificationService.markAllAsRead(user);
         return ResponseEntity.ok(Map.of("message", "All notifications marked as read"));
+    }
+    @GetMapping("/notifications")
+    public ResponseEntity<?> getMyNotifications(HttpServletRequest request) {
+        User user = SessionUtil.requireSessionUser(userRepository, request);
+        List<NotificationDTO> notis = notificationRepository.findAllByUserOrderByCreatedAtDesc(user)
+                .stream()
+                .map(NotificationDTO::new)
+                .toList();
+        return ResponseEntity.ok(notis);
     }
 }
 
