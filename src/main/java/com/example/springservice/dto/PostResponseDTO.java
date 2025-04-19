@@ -1,9 +1,6 @@
 package com.example.springservice.dto;
 
-import com.example.springservice.entites.Comment;
 import com.example.springservice.entites.Post;
-
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostResponseDTO {

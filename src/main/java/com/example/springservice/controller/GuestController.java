@@ -4,7 +4,6 @@ import com.example.springservice.dto.*;
 import com.example.springservice.dto.UserPublicDTO;
 import com.example.springservice.entites.Post;
 import com.example.springservice.entites.User;
-import com.example.springservice.repo.*;
 import com.example.springservice.repo.PostRepository;
 import com.example.springservice.repo.UserFollowsRepository;
 import com.example.springservice.repo.UserRepository;
@@ -27,9 +26,6 @@ public class GuestController {
 
     @Autowired
     private PostRepository postRepository;
-
-    @Autowired
-    private UserFollowsRepository userFollowsRepository;
 
     // 1. Get All Users
     @GetMapping("/users")
