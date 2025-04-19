@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Setter
 @Getter
@@ -18,6 +19,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Integer userId;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<ArtistStyleMapping> styleMappings;
 
     @Column(nullable = false, length = 50)
     private String name;

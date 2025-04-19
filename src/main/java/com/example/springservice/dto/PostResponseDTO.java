@@ -7,29 +7,33 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostResponseDTO {
-    public Integer id;
+    public Integer postId;
     public String caption;
     public String imageUrl;
-    public String authorName;
+    public String createdAt;
     public Integer likeCount;
     public Integer commentCount;
-    public LocalDateTime createdAt;
+    public Integer shareCount;
     public Boolean likedByMe;
-    public List<String> comments;
-    public List<String> styles; // ✅ tag style
+    public List<String> styles;
+
+    public List<CommentResponseDTO> comments; // ✅ new
 
     public PostResponseDTO(Post post, Integer currentUserId) {
-        this.id = post.getId();
+        this.postId = post.getId();
         this.caption = post.getCaption();
         this.imageUrl = post.getImageUrl();
-        this.authorName = post.getAuthor().getName();
+        this.createdAt = post.getCreatedAt().toString();
         this.likeCount = post.getLikes().size();
         this.commentCount = post.getComments().size();
-        this.createdAt = post.getCreatedAt();
-        this.likedByMe = currentUserId != null && post.getLikes().stream()
-                .anyMatch(like -> like.getUser().getUserId().equals(currentUserId));
+        this.shareCount = post.getShares().size();
+        this.likedByMe = currentUserId != null &&
+                post.getLikes().stream().anyMatch(like -> like.getUser().getUserId().equals(currentUserId));
+        this.styles = List.of(); // ใส่ภายหลังจาก controller
+
         this.comments = post.getComments().stream()
-                .map(Comment::getContent)
+                .map(CommentResponseDTO::new)
                 .toList();
     }
 }
+
