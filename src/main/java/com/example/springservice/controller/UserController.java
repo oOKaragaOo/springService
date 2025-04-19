@@ -231,7 +231,7 @@ public class UserController {
 
 @RestController
 @RequestMapping("/guest")
-class GuestController {
+public class GuestController {
 
     @Autowired
     private UserRepository userRepository;
@@ -241,6 +241,9 @@ class GuestController {
 
     @Autowired
     private UserFollowsRepository userFollowsRepository;
+
+    @Autowired
+    private ArtistStyleMappingRepository artistStyleMappingRepository;
 
     // 🔹 1. Get All Users (guest view)
     @GetMapping("/users")
@@ -258,12 +261,20 @@ class GuestController {
         return ResponseEntity.ok(response);
     }
 
-    // 🔹 3. Get All Posts (guest feed)
+    // 🔹 3. Get All Posts (guest feed) + style tag inject
     @GetMapping("/posts")
     public ResponseEntity<?> getAllPosts() {
         List<Post> posts = postRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         List<PostResponseDTO> response = posts.stream()
-                .map(post -> new PostResponseDTO(post, null))
+                .map(post -> {
+                    List<String> styles = artistStyleMappingRepository.findAllByUserId(post.getAuthor().getUserId())
+                            .stream()
+                            .map(mapping -> mapping.getStyle().getStyleName())
+                            .toList();
+                    PostResponseDTO dto = new PostResponseDTO(post, null);
+                    dto.styles = styles;
+                    return dto;
+                })
                 .toList();
         return ResponseEntity.ok(response);
     }
@@ -273,6 +284,12 @@ class GuestController {
     public ResponseEntity<?> getPostById(@PathVariable Integer id) {
         Optional<Post> postOpt = postRepository.findById(id);
         if (postOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Post not found"));
-        return ResponseEntity.ok(new PostResponseDTO(postOpt.get(), null));
+
+        PostResponseDTO dto = new PostResponseDTO(postOpt.get(), null);
+        List<String> styles = artistStyleMappingRepository.findAllByUserId(postOpt.get().getAuthor().getUserId())
+                .stream().map(m -> m.getStyle().getStyleName()).toList();
+        dto.styles = styles;
+
+        return ResponseEntity.ok(dto);
     }
 }

@@ -16,6 +16,7 @@ public class PostResponseDTO {
     public LocalDateTime createdAt;
     public Boolean likedByMe;
     public List<String> comments;
+    public List<String> styles; // ✅ tag style
 
     public PostResponseDTO(Post post, Integer currentUserId) {
         this.id = post.getId();

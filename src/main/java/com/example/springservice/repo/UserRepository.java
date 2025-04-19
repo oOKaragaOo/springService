@@ -11,7 +11,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmail(String email);
     List<User> findByNameContainingIgnoreCase(String name);
     List<User> findByNameContainingIgnoreCase(String name, Sort sort);
-    // ✅
+
     default List<User> findAllSortedByName() {
         return findAll(Sort.by(Sort.Direction.ASC, "name"));
     }
@@ -19,4 +19,3 @@ public interface UserRepository extends JpaRepository<User, Integer> {
         return findByNameContainingIgnoreCase(name, Sort.by(Sort.Direction.ASC, "name"));
     }
 }
-
