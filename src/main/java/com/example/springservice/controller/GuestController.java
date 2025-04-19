@@ -1,10 +1,9 @@
 package com.example.springservice.controller;
 
-import com.example.springservice.dto.PostResponseDTO;
+import com.example.springservice.dto.*;
 import com.example.springservice.dto.UserPublicDTO;
 import com.example.springservice.entites.Post;
 import com.example.springservice.entites.User;
-import com.example.springservice.entites.enmap.ArtistStyle;
 import com.example.springservice.repo.*;
 import com.example.springservice.repo.PostRepository;
 import com.example.springservice.repo.UserFollowsRepository;
@@ -58,8 +57,12 @@ public class GuestController {
                     List<String> styles = author.getStyleMappings().stream()
                             .map(m -> m.getStyle().getStyleName())
                             .toList();
+
                     PostResponseDTO dto = new PostResponseDTO(post, null);
                     dto.styles = styles;
+                    dto.guestComments = post.getComments().stream()
+                            .map(CommentGuestDTO::new)
+                            .toList();
                     return dto;
                 })
                 .toList();
@@ -80,6 +83,9 @@ public class GuestController {
 
         PostResponseDTO dto = new PostResponseDTO(post, null);
         dto.styles = styles;
+        dto.guestComments = post.getComments().stream()
+                .map(CommentGuestDTO::new)
+                .toList();
 
         return ResponseEntity.ok(dto);
     }

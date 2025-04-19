@@ -16,8 +16,8 @@ public class PostResponseDTO {
     public Integer shareCount;
     public Boolean likedByMe;
     public List<String> styles;
-
-    public List<CommentResponseDTO> comments; // ✅ new
+    public List<CommentResponseDTO> comments;       // สำหรับ user
+    public List<CommentGuestDTO> guestComments;     // สำหรับ guest
 
     public PostResponseDTO(Post post, Integer currentUserId) {
         this.postId = post.getId();
@@ -30,10 +30,11 @@ public class PostResponseDTO {
         this.likedByMe = currentUserId != null &&
                 post.getLikes().stream().anyMatch(like -> like.getUser().getUserId().equals(currentUserId));
         this.styles = List.of(); // ใส่ภายหลังจาก controller
-
-        this.comments = post.getComments().stream()
-                .map(CommentResponseDTO::new)
-                .toList();
+        if (currentUserId != null) {
+            this.comments = post.getComments().stream()
+                    .map(CommentResponseDTO::new)
+                    .toList();
+        }
     }
 }
 
