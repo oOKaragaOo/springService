@@ -1,5 +1,6 @@
-package com.example.springservice;
+package com.example.springservice.controller;
 
+import com.example.springservice.SessionUtil;
 import com.example.springservice.entites.*;
 import com.example.springservice.repo.*;
 import com.example.springservice.service.*;
@@ -21,7 +22,6 @@ public class AuthController {
     public AuthController(AuthService authService , UserRepository userRepository) {
         this.authService = authService;
         this.userRepository = userRepository;
-
 
     }
 

@@ -4,7 +4,6 @@ import com.example.springservice.dto.NotificationDTO;
 import com.example.springservice.entites.Notification;
 import com.example.springservice.entites.User;
 import com.example.springservice.repo.NotificationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,74 +12,98 @@ import java.util.List;
 @Service
 public class NotificationService {
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    private final NotificationRepository notificationRepository;
 
-    public void notifyFollow(User receiver, User actor) {
-        if (receiver == null || actor == null || receiver.getUserId().equals(actor.getUserId())) return;
+    public NotificationService(NotificationRepository notificationRepository) {
+        this.notificationRepository = notificationRepository;
+    }
+
+    // ========================== Utility Methods ==========================
+
+    private Notification.NotificationType toNotificationType(String type) {
+        try {
+            return Notification.NotificationType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid notification type: " + type);
+        }
+    }
+
+    private boolean isInvalidNotification(User receiver, User actor) {
+        return receiver == null || actor == null || receiver.getUserId().equals(actor.getUserId());
+    }
+    private void logWarning() {
+        System.err.println("[Warning] " + "Notification target or type is null. Skipping notification.");
+    }
+
+    // ========================== Core Send Methods ==========================
+                      //✅ none Actor
+    private void send(User target, Notification.NotificationType type, String message) {
+        send(target, null, type, message);
+    }
+                      //✅ have Actor
+    private void send(User target, User actor, Notification.NotificationType type, String message) {
+        if (target == null || type == null) {
+            logWarning();
+            return;
+        }
 
         Notification noti = new Notification();
-        noti.setUser(receiver);
+        noti.setUser(target);
         noti.setActor(actor);
-        noti.setType(Notification.NotificationType.FOLLOW);
-        noti.setMessage(actor.getName() + " started following you");
+        noti.setType(type);
+        noti.setMessage(message);
+        noti.setIsRead(false);
         noti.setCreatedAt(LocalDateTime.now());
         notificationRepository.save(noti);
     }
 
-    public void notifyLike(User receiver, User actor, Integer postId) {
-        if (receiver == null || actor == null || receiver.getUserId().equals(actor.getUserId())) return;
+    // ========================== Public Endpoints ==========================
 
-        Notification noti = new Notification();
-        noti.setUser(receiver);
-        noti.setActor(actor);
-        noti.setType(Notification.NotificationType.LIKE);
-        noti.setMessage(actor.getName() + " liked your post (ID: " + postId + ")");
-        noti.setCreatedAt(LocalDateTime.now());
-        notificationRepository.save(noti);
+    public void sendNotiTo(User recipient, String type, String message) {
+        Notification.NotificationType notificationType = toNotificationType(type); // Convert string to ENUM
+        send(recipient, notificationType, message);
     }
 
-    public void notifyComment(User receiver, User actor, Integer postId, String commentContent) {
-        if (receiver == null || actor == null || receiver.getUserId().equals(actor.getUserId())) return;
-
-        Notification noti = new Notification();
-        noti.setUser(receiver);
-        noti.setActor(actor);
-        noti.setType(Notification.NotificationType.COMMENT);
-        noti.setMessage(actor.getName() + " commented on your post (ID: " + postId + "): \"" + commentContent + "\"");
-        noti.setCreatedAt(LocalDateTime.now());
-        notificationRepository.save(noti);
+    public void sendNotiAll(List<User> recipients, String type, String message) {
+        Notification.NotificationType notificationType = toNotificationType(type); // Convert string to ENUM
+        recipients.parallelStream()
+                .forEach(recipient -> send(recipient, notificationType, message));
     }
+
 
     public List<NotificationDTO> getUserNotifications(User user) {
-        return notificationRepository.findAllByUser_UserIdOrderByCreatedAtDesc(user.getUserId())
+        return notificationRepository.findAllByUserOrderByCreatedAtDesc(user)
                 .stream()
                 .map(NotificationDTO::new)
                 .toList();
     }
 
     public long countUnreadNotifications(User user) {
-        return notificationRepository.findAllByUser_UserIdOrderByCreatedAtDesc(user.getUserId())
-                .stream()
-                .filter(n -> !n.getIsRead())
-                .count();
+        return notificationRepository.countByUserAndIsReadFalse(user);
     }
 
     public void markAllAsRead(User user) {
-        List<Notification> notis = notificationRepository.findAllByUser_UserIdOrderByCreatedAtDesc(user.getUserId());
-        notis.forEach(n -> n.setIsRead(true));
-        notificationRepository.saveAll(notis);
+        List<Notification> unread = notificationRepository.findAllByUserAndIsReadFalse(user);
+        unread.forEach(n -> n.setIsRead(true));
+        notificationRepository.saveAll(unread);
+    }
+
+    public void notifyFollow(User receiver, User actor) {
+        if (isInvalidNotification(receiver, actor)) return; // อ่านง่ายขึ้น
+        send(receiver, actor, Notification.NotificationType.FOLLOW,
+                actor.getName() + " started following you");
+    }
+
+    public void notifyLike(User receiver, User actor, Integer postId) {
+        if (isInvalidNotification(receiver, actor)) return;
+        send(receiver, actor, Notification.NotificationType.LIKE,
+                actor.getName() + " liked your post (ID: " + postId + ")");
+    }
+
+    public void notifyComment(User receiver, User actor, Integer postId, String commentContent) {
+        if (isInvalidNotification(receiver, actor)) return;
+        send(receiver, actor, Notification.NotificationType.COMMENT,
+                actor.getName() + " commented on your post (ID: " + postId + "): \"" + commentContent + "\"");
     }
 }
 
-
-
-// ✅ ตัวอย่างการใช้ใน followUser()
-// @Autowired
-// private NotificationService notificationService;
-// ...
-// notificationService.notifyFollow(following, follower);
-
-// ✅ ตัวอย่างการใช้งาน API:
-// GET /notifications => getUserNotifications(user)
-// POST /notifications/read => markAllAsRead(user)

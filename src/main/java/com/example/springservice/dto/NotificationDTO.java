@@ -10,19 +10,20 @@ import java.time.LocalDateTime;
 @Setter
 
 public class NotificationDTO {
-    public String type;
+    public Integer notificationId;
     public String message;
-    public String actorName;
+    public String type;
     public Boolean isRead;
-    public LocalDateTime createdAt;
+    public String createdAt;
 
-    public NotificationDTO(Notification noti) {
-        this.type = noti.getType().name();
-        this.message = noti.getMessage();
-        this.isRead = noti.getIsRead();
-        this.createdAt = noti.getCreatedAt();
-        this.actorName = noti.getActor() != null ? noti.getActor().getName() : "System";
+    public NotificationDTO(Notification n) {
+        this.notificationId = n.getNotificationId();
+        this.message = n.getMessage();
+        this.type = n.getType().name();
+        this.isRead = n.getIsRead();
+        this.createdAt = n.getCreatedAt().toString();
     }
 }
+
 
 

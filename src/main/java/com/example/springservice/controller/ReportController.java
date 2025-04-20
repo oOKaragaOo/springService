@@ -5,6 +5,8 @@ import com.example.springservice.entites.*;
 import com.example.springservice.entites.enmap.Commission;
 import com.example.springservice.repo.*;
 import com.example.springservice.dto.*;
+import com.example.springservice.service.*;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-// ✅ ReportController.java
 
 @RestController
 @RequestMapping("/reports")
@@ -28,6 +29,9 @@ public class ReportController {
 
     @Autowired
     private CommissionRepository commissionRepository;
+
+     @Autowired
+     private NotificationService notificationService;
 
     @PostMapping
     public ResponseEntity<?> createReport(@RequestBody ReportCreateDTO dto, HttpServletRequest request) {
@@ -50,6 +54,21 @@ public class ReportController {
                 return ResponseEntity.status(404).body(Map.of("error", "Commission not found"));
             }
         }
+        // แจ้ง Admin ทุกคน
+        List<User> admins = userRepository.findAll().stream()
+                .filter(u -> "admin".equalsIgnoreCase(u.getRole()))
+                .toList();
+
+        notificationService.sendNotiAll(admins, "NEW_REPORT", "📢 มีรายงานใหม่จาก " + reporter.getRole());
+
+        // แจ้งผู้ใช้ที่ถูก Report
+        notificationService.sendNotiTo(
+                reportedUserOpt.get(),
+                "REPORTED",
+                "⚠️ คุณถูกแจ้งว่า: " + dto.reportType
+        );
+
+
 
         Report report = new Report();
         report.setReporter(reporter);

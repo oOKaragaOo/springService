@@ -43,8 +43,12 @@ public class Notification {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum NotificationType {
-        FOLLOW, LIKE, COMMENT
+        FOLLOW,
+        LIKE,
+        COMMENT,
+        NEW_REPORT,        // แจ้ง Admin ว่ามี Report ใหม่
+        REPORT_UPDATED,    // แจ้งผู้แจ้ง ว่ารายงานถูกอัปเดต
+        REPORTED           // แจ้งผู้ถูกรายงาน
     }
-
 }
 
