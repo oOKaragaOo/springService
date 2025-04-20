@@ -70,23 +70,6 @@ public class NotificationService {
                 .forEach(recipient -> send(recipient, notificationType, message));
     }
 
-    public void notifyFollow(User receiver, User actor) {
-        if (isInvalidNotification(receiver, actor)) return; // อ่านง่ายขึ้น
-        send(receiver, actor, Notification.NotificationType.FOLLOW,
-                actor.getName() + " started following you");
-    }
-
-    public void notifyLike(User receiver, User actor, Integer postId) {
-        if (isInvalidNotification(receiver, actor)) return;
-        send(receiver, actor, Notification.NotificationType.LIKE,
-                actor.getName() + " liked your post (ID: " + postId + ")");
-    }
-
-    public void notifyComment(User receiver, User actor, Integer postId, String commentContent) {
-        if (isInvalidNotification(receiver, actor)) return;
-        send(receiver, actor, Notification.NotificationType.COMMENT,
-                actor.getName() + " commented on your post (ID: " + postId + "): \"" + commentContent + "\"");
-    }
 
     public List<NotificationDTO> getUserNotifications(User user) {
         return notificationRepository.findAllByUserOrderByCreatedAtDesc(user)
@@ -104,14 +87,23 @@ public class NotificationService {
         unread.forEach(n -> n.setIsRead(true));
         notificationRepository.saveAll(unread);
     }
+
+    public void notifyFollow(User receiver, User actor) {
+        if (isInvalidNotification(receiver, actor)) return; // อ่านง่ายขึ้น
+        send(receiver, actor, Notification.NotificationType.FOLLOW,
+                actor.getName() + " started following you");
+    }
+
+    public void notifyLike(User receiver, User actor, Integer postId) {
+        if (isInvalidNotification(receiver, actor)) return;
+        send(receiver, actor, Notification.NotificationType.LIKE,
+                actor.getName() + " liked your post (ID: " + postId + ")");
+    }
+
+    public void notifyComment(User receiver, User actor, Integer postId, String commentContent) {
+        if (isInvalidNotification(receiver, actor)) return;
+        send(receiver, actor, Notification.NotificationType.COMMENT,
+                actor.getName() + " commented on your post (ID: " + postId + "): \"" + commentContent + "\"");
+    }
 }
 
-// ✅ ตัวอย่างการใช้ใน followUser()
-// @Autowired
-// private NotificationService notificationService;
-// ...
-// notificationService.notifyFollow(following, follower);
-
-// ✅ ตัวอย่างการใช้งาน API:
-// GET /notifications => getUserNotifications(user)
-// POST /notifications/read => markAllAsRead(user)

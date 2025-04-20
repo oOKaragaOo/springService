@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
-    List<Notification> findAllByUser_UserIdOrderByCreatedAtDesc(Integer userId);
     List<Notification> findAllByUserOrderByCreatedAtDesc(User user);
     List<Notification> findAllByUserAndIsReadFalse(User user);
-    List<Notification> findUnreadByUser(User user);
+//    List<Notification> findAllByUser_UserIdOrderByCreatedAtDesc(Integer userId);
+//    List<Notification> findUnreadByUser(User user);
 
     long countByUserAndIsReadFalse(User user);
 
