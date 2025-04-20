@@ -16,73 +16,63 @@ public class NotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    // ✅ none Actor
+    public void send(User target, Notification.NotificationType type, String message) {
+        send(target, null, type, message);
+    }
+    // ✅ have Actor
+    public void send(User target, User actor, Notification.NotificationType type, String message) {
+        if (target == null || type == null) return;
+
+        Notification noti = new Notification();
+        noti.setUser(target);
+        noti.setActor(actor);
+        noti.setType(type);
+        noti.setMessage(message);
+        noti.setIsRead(false);
+        noti.setCreatedAt(LocalDateTime.now());
+        notificationRepository.save(noti);
+    }
+
+    // ✅ FOLLOW
     public void notifyFollow(User receiver, User actor) {
         if (receiver == null || actor == null || receiver.getUserId().equals(actor.getUserId())) return;
-
-        Notification noti = new Notification();
-        noti.setUser(receiver);
-        noti.setActor(actor);
-        noti.setType(Notification.NotificationType.FOLLOW);
-        noti.setMessage(actor.getName() + " started following you");
-        noti.setCreatedAt(LocalDateTime.now());
-        notificationRepository.save(noti);
+        send(receiver, actor, Notification.NotificationType.FOLLOW,
+                actor.getName() + " started following you");
     }
 
+    // ✅ LIKE
     public void notifyLike(User receiver, User actor, Integer postId) {
         if (receiver == null || actor == null || receiver.getUserId().equals(actor.getUserId())) return;
-
-        Notification noti = new Notification();
-        noti.setUser(receiver);
-        noti.setActor(actor);
-        noti.setType(Notification.NotificationType.LIKE);
-        noti.setMessage(actor.getName() + " liked your post (ID: " + postId + ")");
-        noti.setCreatedAt(LocalDateTime.now());
-        notificationRepository.save(noti);
+        send(receiver, actor, Notification.NotificationType.LIKE,
+                actor.getName() + " liked your post (ID: " + postId + ")");
     }
 
+    // ✅ COMMENT
     public void notifyComment(User receiver, User actor, Integer postId, String commentContent) {
         if (receiver == null || actor == null || receiver.getUserId().equals(actor.getUserId())) return;
-
-        Notification noti = new Notification();
-        noti.setUser(receiver);
-        noti.setActor(actor);
-        noti.setType(Notification.NotificationType.COMMENT);
-        noti.setMessage(actor.getName() + " commented on your post (ID: " + postId + "): \"" + commentContent + "\"");
-        noti.setCreatedAt(LocalDateTime.now());
-        notificationRepository.save(noti);
+        send(receiver, actor, Notification.NotificationType.COMMENT,
+                actor.getName() + " commented on your post (ID: " + postId + "): \"" + commentContent + "\"");
     }
 
+    // ✅ Noti sorted
     public List<NotificationDTO> getUserNotifications(User user) {
-        return notificationRepository.findAllByUser_UserIdOrderByCreatedAtDesc(user.getUserId())
+        return notificationRepository.findAllByUserOrderByCreatedAtDesc(user)
                 .stream()
                 .map(NotificationDTO::new)
                 .toList();
     }
 
     public long countUnreadNotifications(User user) {
-        return notificationRepository.findAllByUser_UserIdOrderByCreatedAtDesc(user.getUserId())
-                .stream()
-                .filter(n -> !n.getIsRead())
-                .count();
+        return notificationRepository.countByUserAndIsReadFalse(user);
     }
 
     public void markAllAsRead(User user) {
-        List<Notification> notis = notificationRepository.findAllByUser_UserIdOrderByCreatedAtDesc(user.getUserId());
-        notis.forEach(n -> n.setIsRead(true));
-        notificationRepository.saveAll(notis);
+        List<Notification> unread = notificationRepository.findAllByUserAndIsReadFalse(user);
+        unread.forEach(n -> n.setIsRead(true));
+        notificationRepository.saveAll(unread);
     }
-    public void send(User user, Notification.NotificationType  type, String message) {
-        Notification noti = new Notification();
-        noti.setUser(user);
-        noti.setType(type);
-        noti.setMessage(message);
-        noti.setCreatedAt(LocalDateTime.now());
-        notificationRepository.save(noti);
-    }
-
-
 }
-
 
 
 // ✅ ตัวอย่างการใช้ใน followUser()

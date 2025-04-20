@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/auth/**","/user/**","/admin/**","/posts/**" ,"/guest/**" ,"/notifications/**").permitAll()
 
                         .requestMatchers(HttpMethod.DELETE, "/auth/**","/user/**","/admin/**","/posts/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/auth/**","/user/**","/admin/**","/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/auth/**","/user/**","/admin/**","/posts/**","/notifications/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/auth/**","/user/**","/admin/**","/posts/**").permitAll()
 //                        .requestMatchers(HttpMethod.HEAD, "/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()

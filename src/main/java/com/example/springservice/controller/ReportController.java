@@ -66,7 +66,7 @@ public class ReportController {
             notificationService.send(
                     admin,
                     NEW_REPORT,
-                    "📢 มีรายงานใหม่จาก " + reporter.getName()
+                    "📢 มีรายงานใหม่จาก " + reporter.getRole()
             );
         }
         notificationService.send(
