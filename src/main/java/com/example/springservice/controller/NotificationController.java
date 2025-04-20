@@ -7,31 +7,36 @@ import com.example.springservice.entites.User;
 import com.example.springservice.repo.NotificationRepository;
 import com.example.springservice.repo.UserRepository;
 import com.example.springservice.service.NotificationService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/notifications")
 public class NotificationController {
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private NotificationService notificationService;
-
     @Autowired
     private NotificationRepository notificationRepository;
 
+    //User session
+    private User getSessionUser(HttpServletRequest request) {
+        return SessionUtil.requireSessionUser(userRepository, request);
+    }
+
     @GetMapping
     public ResponseEntity<?> getNotifications(HttpServletRequest request) {
-        User user = SessionUtil.requireSessionUser(userRepository, request);
+        User user = getSessionUser(request);
+
         List<NotificationDTO> notifications = notificationService.getUserNotifications(user);
         long unreadCount = notificationService.countUnreadNotifications(user);
 
@@ -43,35 +48,32 @@ public class NotificationController {
 
     @PostMapping("/read")
     public ResponseEntity<?> markNotificationsAsRead(HttpServletRequest request) {
-        User user = SessionUtil.requireSessionUser(userRepository, request);
+        User user = getSessionUser(request);
+
         notificationService.markAllAsRead(user);
         return ResponseEntity.ok(Map.of("message", "All notifications marked as read"));
     }
+
     @PutMapping("/{id}/read")
+    @Transactional
     public ResponseEntity<?> markOneAsRead(@PathVariable Integer id, HttpServletRequest request) {
-        User user = SessionUtil.requireSessionUser(userRepository, request);
+        User user = getSessionUser(request);
 
-        Optional<Notification> notiOpt = notificationRepository.findById(id);
-        if (notiOpt.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Notification not found"));
-        }
+        Notification noti = notificationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Notification not found"));
 
-        Notification noti = notiOpt.get();
         if (!noti.getUser().getUserId().equals(user.getUserId())) {
-            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+            throw new AccessDeniedException("Access denied");
         }
 
-        if (noti.getIsRead()) {
-            return ResponseEntity.ok(Map.of("message", "Already marked as read"));
+        if (!noti.getIsRead()) {
+            noti.setIsRead(true);
+            notificationRepository.save(noti);
         }
 
-        noti.setIsRead(true);
-        notificationRepository.save(noti);
         return ResponseEntity.ok(Map.of("message", "Notification marked as read"));
     }
-
 }
-
 
 
 // ✅ ตัวอย่างการใช้งานใน PostController หรือ PostService:

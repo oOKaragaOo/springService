@@ -62,16 +62,12 @@ public class ReportController {
                 .filter(u -> "admin".equalsIgnoreCase(u.getRole()))
                 .toList();
 
-        for (User admin : admins) {
-            notificationService.send(
-                    admin,
-                    NEW_REPORT,
-                    "📢 มีรายงานใหม่จาก " + reporter.getRole()
-            );
-        }
-        notificationService.send(
+        notificationService.sendNotiAll(admins, "NEW_REPORT", "📢 มีรายงานใหม่จาก " + reporter.getRole());
+
+        // แจ้งผู้ใช้ที่ถูก Report
+        notificationService.sendNotiTo(
                 reportedUserOpt.get(),
-                REPORTED,
+                "REPORTED",
                 "⚠️ คุณถูกแจ้งว่า: " + dto.reportType
         );
 
