@@ -26,9 +26,6 @@ public class NotificationController {
 
     @Autowired
     private NotificationService notificationService;
-    @Autowired
-    private NotificationRepository notificationRepository;
-
 
     @GetMapping
     public ResponseEntity<?> getNotifications(HttpServletRequest request) {
@@ -48,16 +45,8 @@ public class NotificationController {
         notificationService.markAllAsRead(user);
         return ResponseEntity.ok(Map.of("message", "All notifications marked as read"));
     }
-    @GetMapping("/notifications")
-    public ResponseEntity<?> getMyNotifications(HttpServletRequest request) {
-        User user = SessionUtil.requireSessionUser(userRepository, request);
-        List<NotificationDTO> notis = notificationRepository.findAllByUserOrderByCreatedAtDesc(user)
-                .stream()
-                .map(NotificationDTO::new)
-                .toList();
-        return ResponseEntity.ok(notis);
-    }
 }
+
 
 
 // ✅ ตัวอย่างการใช้งานใน PostController หรือ PostService:
