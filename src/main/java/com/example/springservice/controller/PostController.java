@@ -114,7 +114,7 @@ public class PostController {
 
         Optional<Post> postOpt = postRepository.findById(id);
         if (postOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Post not found"));
-
+        System.out.println("*********");
         String content = body.get("content");
         if (content == null || content.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Comment content required"));
