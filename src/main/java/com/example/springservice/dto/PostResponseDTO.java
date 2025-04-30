@@ -15,9 +15,13 @@ public class PostResponseDTO {
     public List<String> styles;
     public List<CommentResponseDTO> comments;       // สำหรับ user
     public List<CommentGuestDTO> guestComments;     // สำหรับ guest
+    public String authorName;
+    public String authorProfile;
 
     public PostResponseDTO(Post post, Integer currentUserId) {
         this.postId = post.getId();
+        this.authorName = post.getAuthor().getName();
+        this.authorProfile = post.getAuthor().getProfile_picture();
         this.caption = post.getCaption();
         this.imageUrl = post.getImageUrl();
         this.createdAt = post.getCreatedAt().toString();
@@ -31,6 +35,7 @@ public class PostResponseDTO {
             this.comments = post.getComments().stream()
                     .map(CommentResponseDTO::new)
                     .toList();
+
         }
     }
 }
