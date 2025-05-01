@@ -15,9 +15,13 @@ public class PostResponseDTO {
     public List<String> styles;
     public List<CommentResponseDTO> comments;       // สำหรับ user
     public List<CommentGuestDTO> guestComments;     // สำหรับ guest
+    public String authorName;
+    public String authorProfile;    // สำหรับ guest
 
     public PostResponseDTO(Post post, Integer currentUserId) {
         this.postId = post.getId();
+        this.authorName = post.getAuthor().getName();
+        this.authorProfile = post.getAuthor().getProfile_picture();
         this.caption = post.getCaption();
         this.imageUrl = post.getImageUrl();
         this.createdAt = post.getCreatedAt().toString();

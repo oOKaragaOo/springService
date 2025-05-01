@@ -32,7 +32,7 @@ public class PostController {
     @PostMapping
     public ResponseEntity<?> createPost(@RequestBody PostCreateDTO dto, HttpServletRequest request) {
         User user = SessionUtil.requireSessionUser(userRepository, request);
-
+        System.out.println("--->  \uD83D\uDE80 ' "+user.getName()+" ' Creating post....");
         Post post = new Post();
         post.setAuthor(user);
         post.setCaption(dto.caption);

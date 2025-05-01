@@ -62,4 +62,84 @@ public class Report {
 
 
     // Getters / Setters...
+
+    public Integer getReportId() {
+        return reportId;
+    }
+
+    public void setReportId(Integer reportId) {
+        this.reportId = reportId;
+    }
+
+    public User getReporter() {
+        return reporter;
+    }
+
+    public void setReporter(User reporter) {
+        this.reporter = reporter;
+    }
+
+    public User getReportedUser() {
+        return reportedUser;
+    }
+
+    public void setReportedUser(User reportedUser) {
+        this.reportedUser = reportedUser;
+    }
+
+    public Commission getCommission() {
+        return commission;
+    }
+
+    public void setCommission(Commission commission) {
+        this.commission = commission;
+    }
+
+    public ReportType getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(ReportType reportType) {
+        this.reportType = reportType;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public ReportStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReportStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public User getResolvedBy() {
+        return resolvedBy;
+    }
+
+    public void setResolvedBy(User resolvedBy) {
+        this.resolvedBy = resolvedBy;
+    }
+
+    public LocalDateTime getResolvedAt() {
+        return resolvedAt;
+    }
+
+    public void setResolvedAt(LocalDateTime resolvedAt) {
+        this.resolvedAt = resolvedAt;
+    }
 }
