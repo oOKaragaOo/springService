@@ -112,6 +112,17 @@ public class UserController {
         return ResponseEntity.ok(Map.of("user", new UserProfileDTO(sessionUser)));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Integer id) {
+        System.out.println("----> 🟢 GET /users/" + id + " called");
+
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+        return ResponseEntity.ok(Map.of("user", new UserProfileDTO(user)));
+    }
+
     @GetMapping("/posts/{userId}") // for profile
     public ResponseEntity<?> getPostsByUserId(@PathVariable Integer userId) {
         System.out.println("----> 🟢 GET User get Post by Id //called//");
