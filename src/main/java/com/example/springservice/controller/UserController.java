@@ -30,31 +30,23 @@ public class UserController {
 
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody User updatedUser, HttpServletRequest request) {
-        System.out.println("----> 🟡 PUT User update profile //called//");
+        System.out.println("----> 🟡 PUT /user/profile called");
 
         Integer userId = SessionUtil.getUserIdFromSession(request);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
         }
 
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
-        }
-
-        User existingUser = userOpt.get();
-        // field update
-        existingUser.setName(updatedUser.getName());
-        existingUser.setProfile_picture(updatedUser.getProfile_picture());
-        existingUser.setDescription(updatedUser.getDescription());
-        existingUser.setCommission_status(updatedUser.getCommission_status());
-
-        userRepository.save(existingUser);
-        // ✅ Return DTO
-        return ResponseEntity.ok(Map.of(
-                "message", "Profile updated successfully",
-                "user", new UserProfileDTO(existingUser)
-        ));
+        return userRepository.findById(userId)
+                .map(existingUser -> {
+                    applyUserUpdates(existingUser, updatedUser);
+                    userRepository.save(existingUser);
+                    return ResponseEntity.ok(Map.of(
+                            "message", "Profile updated successfully",
+                            "user", new UserProfileDTO(existingUser)
+                    ));
+                })
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found")));
     }
 
     @PatchMapping("/change-password")
@@ -237,6 +229,29 @@ public class UserController {
                 .map(f -> new UserProfileDTO(f.getFollowing(), currentUser.getUserId(), userFollowsRepository))
                 .toList();
         return ResponseEntity.ok(response);
+    }
+
+
+    private void applyUserUpdates(User existing, User update) {
+        if (isValid(update.getName())) {
+            existing.setName(update.getName().trim());
+        }
+
+        if (isValid(update.getProfile_picture())) {
+            existing.setProfile_picture(update.getProfile_picture().trim());
+        }
+
+        if (isValid(update.getDescription())) {
+            existing.setDescription(update.getDescription().trim());
+        }
+
+        if (update.getCommission_status() != null) {
+            existing.setCommission_status(update.getCommission_status());
+        }
+    }
+
+    private boolean isValid(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
 }
