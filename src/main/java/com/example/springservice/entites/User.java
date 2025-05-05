@@ -61,6 +61,11 @@ public class User {
         this.updated_at = LocalDateTime.now();
     }
 
+    public String getProfilePicture() {
+        return this.profile_picture != null ? this.profile_picture : "/images/default-avatar.png";
+    }
+
+
     // --- ENUMS ---
 
 

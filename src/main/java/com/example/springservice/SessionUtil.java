@@ -40,6 +40,7 @@ public class SessionUtil {
 //
 //        return ResponseEntity.ok(userOpt.get());
 //    }
+
     public static User requireSessionUser(UserRepository userRepository, HttpServletRequest request) {
         Integer userId = getUserIdFromSession(request);
         if (userId == null) {

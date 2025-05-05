@@ -29,14 +29,14 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth // ✅
-                        .requestMatchers(HttpMethod.OPTIONS, "/auth/**","/user/**","/admin/**","/posts/**","/guest/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/**","/user/**","/admin/**","/posts/**","/reports/**" , "/notifications/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth/**","/user/**","/admin/**","/posts/**" ,"/guest/**" ,"/notifications/**").permitAll()
+                .authorizeHttpRequests(auth -> auth // ✅/commissions
+                        .requestMatchers(HttpMethod.OPTIONS, "/auth/**","/user/**","/admin/**","/posts/**","/guest/**" ,"/commissions/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/**","/user/**","/admin/**","/posts/**","/reports/**" , "/notifications/**","/commissions/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/**","/user/**","/admin/**","/posts/**" ,"/guest/**" ,"/notifications/**","/commissions/**").permitAll()
 
-                        .requestMatchers(HttpMethod.DELETE, "/auth/**","/user/**","/admin/**","/posts/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/auth/**","/user/**","/admin/**","/posts/**","/notifications/**").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/auth/**","/user/**","/admin/**","/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/auth/**","/user/**","/admin/**","/posts/**","/commissions/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/auth/**","/user/**","/admin/**","/posts/**","/notifications/**","/commissions/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/auth/**","/user/**","/admin/**","/posts/**","/commissions/**").permitAll()
 //                        .requestMatchers(HttpMethod.HEAD, "/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()

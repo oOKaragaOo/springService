@@ -48,7 +48,8 @@ public class Notification {
         COMMENT,
         NEW_REPORT,        // แจ้ง Admin ว่ามี Report ใหม่
         REPORT_UPDATED,    // แจ้งผู้แจ้ง ว่ารายงานถูกอัปเดต
-        REPORTED           // แจ้งผู้ถูกรายงาน
+        REPORTED        ,   // แจ้งผู้ถูกรายงาน
+        NEW_COMMISSION
     }
 }
 

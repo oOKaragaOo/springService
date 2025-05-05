@@ -25,6 +25,7 @@ public class AuthService {
         user.setRole(role);
         return userRepository.save(user);
     }
+
     public String encodePassword(String rawPassword) {
         return passwordEncoder.encode(rawPassword);
     }
@@ -37,6 +38,7 @@ public class AuthService {
         return userRepository.findByEmail(email)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()));
     }
+
     public boolean userExists(String email) {
         return userRepository.findByEmail(email).isPresent();
     }

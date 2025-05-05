@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-
 @Entity
 @Table(name = "Commissions")
 public class Commission {
@@ -56,9 +55,5 @@ public class Commission {
 
     public enum Status {
         REQUESTED, ACCEPTED, REJECTED, IN_PROGRESS, DELIVERED, COMPLETED, CANCELLED
-
     }
-
-    // Getters and setters by lombok
 }
-

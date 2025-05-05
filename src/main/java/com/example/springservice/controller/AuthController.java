@@ -60,7 +60,6 @@ public class AuthController {
                 .orElse(ResponseEntity.status(401).body(Map.of("message", "Invalid credentials")));
     }
 
-
     @GetMapping("/session")
     public ResponseEntity<?> session(HttpServletRequest request) {
         System.out.println("----> 🟢 GET /auth/session called");
@@ -75,6 +74,7 @@ public class AuthController {
         }
         return ResponseEntity.status(401).body(Map.of("message", "Not logged in"));
     }
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         System.out.println("----> 🟢 POST /auth/logout called");
