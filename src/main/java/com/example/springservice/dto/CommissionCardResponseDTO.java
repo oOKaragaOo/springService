@@ -9,7 +9,7 @@ public class CommissionCardResponseDTO {
     public Integer cardId;
     public String title;
     public String description;
-    public BigDecimal price;
+    public String price;;
     public Integer estimatedDuration;
     public String sampleImageUrl;
     public Boolean open;

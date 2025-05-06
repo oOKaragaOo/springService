@@ -29,8 +29,8 @@ public class CommissionCard {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, precision = 38, scale = 2)
-    private BigDecimal price;
+    @Column(nullable = false)
+    private String price;
 
     @Column(name = "estimated_duration")
     private Integer estimatedDuration;
