@@ -3,11 +3,17 @@ package com.example.springservice.service;
 import com.example.springservice.dto.NotificationDTO;
 import com.example.springservice.entites.Notification;
 import com.example.springservice.entites.User;
+import com.example.springservice.entites.UserFollows;
 import com.example.springservice.repo.NotificationRepository;
+import com.example.springservice.repo.UserFollowsRepository;
+import com.example.springservice.repo.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class NotificationService {
@@ -17,6 +23,9 @@ public class NotificationService {
     public NotificationService(NotificationRepository notificationRepository) {
         this.notificationRepository = notificationRepository;
     }
+
+    @Autowired
+    private UserFollowsRepository userFollowsRepository;
 
     // ========================== Utility Methods ==========================
 
@@ -59,6 +68,7 @@ public class NotificationService {
 
     // ========================== Public Endpoints ==========================
 
+
     public void sendNotiTo(User recipient, String type, String message) {
         Notification.NotificationType notificationType = toNotificationType(type); // Convert string to ENUM
         send(recipient, notificationType, message);
@@ -69,6 +79,23 @@ public class NotificationService {
         recipients.parallelStream()
                 .forEach(recipient -> send(recipient, notificationType, message));
     }
+
+    public void sendNotiAll(List<User> recipients, User actor, String type,String message) {
+        Notification.NotificationType notificationType = toNotificationType(type); // Convert string to ENUM
+        recipients.parallelStream()
+                .forEach(recipient -> send(recipient,actor, notificationType, message));
+    }
+
+    public void sendToAllFollowers(User artist, User actor, String type, String message ) {
+        List<User> followers = userFollowsRepository
+                .findAllByFollowing_UserId(artist.getUserId())
+                .stream()
+                .map(UserFollows::getFollower)
+                .toList();
+
+        sendNotiAll(followers,actor, type, message);
+    }
+
 
 
     public List<NotificationDTO> getUserNotifications(User user) {

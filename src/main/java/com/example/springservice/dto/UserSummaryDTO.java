@@ -7,10 +7,9 @@ public class UserSummaryDTO {
     public String name;
     public String profilePicture;
 
-    public UserSummaryDTO(User u) {
-        this.id = u.getUserId();
-        this.name = u.getName();
-        this.profilePicture = u.getProfilePicture();
+    public UserSummaryDTO(User user) {
+        this.id = user.getUserId();
+        this.name = user.getName();
+        this.profilePicture = user.getProfilePicture(); // getter ที่นายเขียนไว้แล้ว
     }
 }
-

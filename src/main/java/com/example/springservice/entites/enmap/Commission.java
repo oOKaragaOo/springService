@@ -9,12 +9,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
 @Entity
-@Table(name = "Commissions")
+@Table(name = "commissions")
+@Getter @Setter
 public class Commission {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer commissionId;
@@ -36,7 +34,6 @@ public class Commission {
     @Column(nullable = false)
     private BigDecimal price;
 
-    @Column
     private LocalDate deadline;
 
     @Enumerated(EnumType.STRING)
@@ -49,7 +46,7 @@ public class Commission {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @PreUpdate
-    public void setUpdatedAt() {
+    public void updateTimestamp() {
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -57,3 +54,4 @@ public class Commission {
         REQUESTED, ACCEPTED, REJECTED, IN_PROGRESS, DELIVERED, COMPLETED, CANCELLED
     }
 }
+

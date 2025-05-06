@@ -26,6 +26,7 @@ public class UserProfileDTO {
         this.role = user.getRole();
         this.status = user.getStatus().toString();
         this.followerCount = 0; // default
+        this.followedByMe = false;
     }
 
     public UserProfileDTO(User user, Integer currentUserId, UserFollowsRepository followsRepo) {

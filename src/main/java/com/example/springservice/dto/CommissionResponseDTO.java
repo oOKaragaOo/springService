@@ -16,10 +16,11 @@ public class CommissionResponseDTO {
         this.id = c.getCommissionId();
         this.title = c.getTitle();
         this.description = c.getDescription();
-        this.price = c.getPrice() != null ? c.getPrice().doubleValue() : null;
+        this.price = c.getPrice().doubleValue();
         this.status = c.getStatus().name();
         this.deadline = c.getDeadline() != null ? c.getDeadline().toString() : null;
         this.customer = new UserSummaryDTO(c.getCustomer());
         this.artist = new UserSummaryDTO(c.getArtist());
     }
 }
+

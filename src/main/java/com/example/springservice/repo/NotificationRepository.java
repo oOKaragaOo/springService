@@ -13,8 +13,4 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
 //    List<Notification> findUnreadByUser(User user);
 
     long countByUserAndIsReadFalse(User user);
-
-
-
-
 }

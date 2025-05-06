@@ -68,8 +68,6 @@ public class ReportController {
                 "⚠️ คุณถูกแจ้งว่า: " + dto.reportType
         );
 
-
-
         Report report = new Report();
         report.setReporter(reporter);
         report.setReportedUser(reportedUserOpt.get());

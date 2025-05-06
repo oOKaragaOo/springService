@@ -5,8 +5,10 @@ import com.example.springservice.dto.*;
 import com.example.springservice.entites.*;
 import com.example.springservice.entites.enmap.Commission;
 import com.example.springservice.repo.*;
+import com.example.springservice.service.CommissionService;
 import com.example.springservice.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,79 +17,70 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-// 📁 CommissionController.java
+//Use less
 @RestController
 @RequestMapping("/commissions")
+@RequiredArgsConstructor
 public class CommissionController {
 
-    @Autowired
-    private CommissionRepository commissionRepository;
-    @Autowired private UserRepository userRepository;
-    @Autowired private NotificationService notificationService;
+    private final CommissionService commissionService;
+    private final UserRepository userRepository;
 
     @PostMapping
-    public ResponseEntity<?> createCommission(@RequestBody CommissionCreateDTO dto, HttpServletRequest request) {
+    public ResponseEntity<?> create(@RequestBody CommissionCreateDTO dto, HttpServletRequest request) {
         User customer = SessionUtil.requireSessionUser(userRepository, request);
-        System.out.println("--> createCommission");
-        if (dto.artistId == null || dto.title == null || dto.price == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Missing required fields"));
-        }
-
-        // ตรวจสอบว่า User กำลังสร้าง Commission ให้ตัวเองหรือไม่
-        if (dto.artistId.equals(customer.getUserId())) {
-            return ResponseEntity.badRequest().body(Map.of("error", "User cannot create a commission for themselves"));
-        }
-
-        Optional<User> artistOpt = userRepository.findById(dto.artistId);
-        if (artistOpt.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Artist not found"));
-        }
-
-        Commission commission = new Commission();
-        commission.setCustomer(customer);
-        commission.setArtist(artistOpt.get());
-        commission.setTitle(dto.title);
-        commission.setDescription(dto.description);
-        commission.setPrice(dto.price);
-        commission.setDeadline(dto.deadline);
-        commission.setStatus(Commission.Status.REQUESTED);
-        commissionRepository.save(commission);
-
-        notificationService.sendNotiTo(artistOpt.get(), "NEW_COMMISSION", "📥 มีคำขอใหม่จาก " + customer.getName());
-
-        return ResponseEntity.ok(Map.of("message", "Commission created", "id", commission.getCommissionId()));
+        return ResponseEntity.ok(commissionService.requestCommission(dto, customer));
     }
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(@PathVariable Integer id, @RequestParam String status, HttpServletRequest request) {
+
+    @PostMapping("/{id}/respond")
+    public ResponseEntity<?> respondToRequest(
+            @PathVariable Integer id,
+            @RequestBody CommissionStatusUpdateDTO dto,
+            HttpServletRequest request) {
+        User artist = SessionUtil.requireSessionUser(userRepository, request);
+        return ResponseEntity.ok(commissionService.respondToRequest(id, Commission.Status.valueOf(dto.status), artist));
+    }
+
+    @PostMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Integer id,
+            @RequestBody CommissionStatusUpdateDTO dto,
+            HttpServletRequest request) {
         User user = SessionUtil.requireSessionUser(userRepository, request);
-        Optional<Commission> comOpt = commissionRepository.findById(id);
-        if (comOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Not found"));
+        return ResponseEntity.ok(commissionService.updateStatus(id, Commission.Status.valueOf(dto.status), user));
+    }
 
-        Commission com = comOpt.get();
-        if (!com.getArtist().getUserId().equals(user.getUserId())) {
-            return ResponseEntity.status(403).body(Map.of("error", "Only artist can change status"));
-        }
-
-        try {
-            com.setStatus(Commission.Status.valueOf(status));
-            commissionRepository.save(com);
-            notificationService.sendNotiTo(com.getCustomer(), "COMMISSION_UPDATED", "📌 คำขอของคุณถูกอัปเดตเป็น: " + status);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid status"));
-        }
-
-        return ResponseEntity.ok(Map.of("message", "Status updated"));
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getDetail(@PathVariable Integer id, HttpServletRequest request) {
+        User user = SessionUtil.requireSessionUser(userRepository, request);
+        return ResponseEntity.ok(commissionService.getDetail(id, user));
     }
 
     @GetMapping
     public ResponseEntity<?> getMyCommissions(HttpServletRequest request) {
         User user = SessionUtil.requireSessionUser(userRepository, request);
-        List<Commission> list;
-        if ("artist".equalsIgnoreCase(user.getRole())) {
-            list = commissionRepository.findAllByArtistOrderByCreatedAtDesc(user);
-        } else {
-            list = commissionRepository.findAllByCustomerOrderByCreatedAtDesc(user);
-        }
-        return ResponseEntity.ok(Map.of("commissions", list));
+        return ResponseEntity.ok(commissionService.getMyCommissions(user));
     }
+
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<?> deleteCommission(@PathVariable Integer id, HttpServletRequest request) {
+//        User user = SessionUtil.requireSessionUser(userRepository, request);
+//
+//        Optional<Commission> commissionOpt = commissionRepository.findById(id);
+//        if (commissionOpt.isEmpty()) {
+//            return ResponseEntity.status(404).body(Map.of("error", "Commission not found"));
+//        }
+//
+//        Commission commission = commissionOpt.get();
+//        // ตรวจสอบว่า user เป็นเจ้าของ commission หรือศิลปิน
+//        if (!commission.getCustomer().getUserId().equals(user.getUserId()) &&
+//                !commission.getArtist().getUserId().equals(user.getUserId())) {
+//            return ResponseEntity.status(403).body(Map.of("error", "You don't have permission to delete this commission"));
+//        }
+//
+//        commissionRepository.delete(commission);
+//        return ResponseEntity.ok(Map.of("message", "Commission deleted"));
+//    }
+
 }
+

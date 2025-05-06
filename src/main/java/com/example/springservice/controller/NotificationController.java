@@ -76,7 +76,7 @@ public class NotificationController {
 }
 
 
-// ✅ ตัวอย่างการใช้งานใน PostController หรือ PostService:
+// ✅ ตัวอย่างการใช้งาน
 // @Autowired
 // private NotificationService notificationService;
 //

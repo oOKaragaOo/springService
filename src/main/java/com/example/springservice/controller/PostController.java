@@ -196,8 +196,7 @@ public class PostController {
         return ResponseEntity.ok(Map.of("message", "Post unliked"));
     }
 
-//======================================= 🖥️ Func. 🖥️ ======================================================//
-
+//======================================= 🖥️ Reuse 🖥️ ======================================================//
     private Post getVerifiedPost (Integer id, User user) {
         Optional<Post> postOpt = postRepository.findById(id);
         if (postOpt.isEmpty()) {

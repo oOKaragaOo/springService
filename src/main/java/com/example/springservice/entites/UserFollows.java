@@ -38,6 +38,5 @@ public class UserFollows {
         this.following = following;
         this.id.setFollowingId(following.getUserId());
     }
-
 }
 
