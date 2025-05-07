@@ -16,7 +16,7 @@ public interface CommissionRepository extends JpaRepository<Commission, Integer>
     List<Commission> findAllByArtistOrderByCreatedAtDesc(User artist);
     @Query("SELECT c FROM Commission c WHERE c.customer = :customer OR c.artist = :artist ORDER BY c.createdAt DESC")
     List<Commission> findByCustomerOrArtist(@Param("customer") User customer, @Param("artist") User artist);
-
+    List<Commission> findByArtist(User artist);
 }
 
 

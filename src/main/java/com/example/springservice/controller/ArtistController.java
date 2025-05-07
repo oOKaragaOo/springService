@@ -5,9 +5,11 @@ import com.example.springservice.dto.CommissionCardCreateDTO;
 import com.example.springservice.dto.CommissionCardUpdateDTO;
 import com.example.springservice.entites.User;
 import com.example.springservice.entites.UserFollows;
+import com.example.springservice.repo.CommissionCardRepository;
 import com.example.springservice.repo.UserFollowsRepository;
 import com.example.springservice.repo.UserRepository;
 import com.example.springservice.service.CommissionCardService;
+import com.example.springservice.service.CommissionService;
 import com.example.springservice.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +33,7 @@ public class ArtistController {
     private NotificationService notiService;
 
     @Autowired
-    UserFollowsRepository userFollowsRepo;
+    CommissionService commissionService;
 
     //======================================= 🛠️ C 🛠️ ======================================================//
     @PostMapping("/commission-cards")
@@ -58,6 +60,14 @@ public class ArtistController {
         User artist = SessionUtil.requireSessionUser(userRepo, request);
         return ResponseEntity.ok(cardService.getMyCards(artist));
     }
+
+    @GetMapping("/commissions")
+    public ResponseEntity<?> getMyCommissions(HttpServletRequest request) {
+        System.out.println("--> GET /artist/commissions");
+        User artist = SessionUtil.requireSessionUser(userRepo, request);
+        return ResponseEntity.ok(commissionService.getMyCommissionsAsArtist(artist));
+    }
+
 
     //======================================= 🛠️ U 🛠️ ======================================================//
     @PutMapping("/commission-cards/{id}")

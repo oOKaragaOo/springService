@@ -47,6 +47,11 @@ public class CommissionService {
 
         return new CommissionResponseDTO(commission);
     }
+    // 🟢 ศิลปินดูคอมมิชชันที่ได้รับ
+    public List<CommissionResponseDTO> getMyCommissionsAsArtist(User artist) {
+        List<Commission> list = commissionRepo.findByArtist(artist);
+        return list.stream().map(CommissionResponseDTO::new).toList();
+    }
 
     public CommissionResponseDTO respondToRequest(Integer id, Commission.Status status, User artist) {
         Commission commission = findCommissionById(id);
@@ -93,17 +98,23 @@ public class CommissionService {
         return new CommissionResponseDTO(commission);
     }
 
+    // 🔍 ลูกค้าและศิลปินดูงานตัวเอง
     public CommissionResponseDTO getDetail(Integer id, User user) {
-        Commission c = findCommissionById(id);
+        Commission c = getCommissionOrThrow(id);
         if (!c.getCustomer().getUserId().equals(user.getUserId()) &&
                 !c.getArtist().getUserId().equals(user.getUserId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized access");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized");
         }
         return new CommissionResponseDTO(c);
     }
 
+    private Commission getCommissionOrThrow(Integer id) {
+        return commissionRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Commission not found"));
+    }
+
     public List<CommissionResponseDTO> getMyCommissions(User user) {
-        List<Commission> list = commissionRepository.findByCustomerOrArtist(user, user);
+        List<Commission> list = commissionRepo.findByCustomerOrArtist(user, user);
         return list.stream().map(CommissionResponseDTO::new).toList();
     }
 

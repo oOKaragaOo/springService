@@ -5,6 +5,7 @@ import java.util.List;
 
 public class PostResponseDTO {
     public Integer postId;
+    public Integer authorId;
     public String caption;
     public String imageUrl;
     public String createdAt;
@@ -20,6 +21,7 @@ public class PostResponseDTO {
 
     public PostResponseDTO(Post post, Integer currentUserId) {
         this.postId = post.getId();
+        this.authorId = post.getAuthor().getUserId();
         this.authorName = post.getAuthor().getName();
         this.authorProfile = post.getAuthor().getProfile_picture();
         this.caption = post.getCaption();
