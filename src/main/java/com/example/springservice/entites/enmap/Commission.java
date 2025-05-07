@@ -32,7 +32,7 @@ public class Commission {
     private String description;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private String price;
 
     private LocalDate deadline;
 

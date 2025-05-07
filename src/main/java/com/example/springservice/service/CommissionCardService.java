@@ -7,8 +7,10 @@ import com.example.springservice.entites.CommissionCard;
 import com.example.springservice.entites.User;
 import com.example.springservice.repo.CommissionCardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -48,11 +50,8 @@ public class CommissionCardService {
     }
 
     public ResponseEntity<?> updateCard(User artist, Integer id, CommissionCardUpdateDTO dto) {
-        ResponseEntity<?> response = validateCard(artist, id);
-        if (!response.getStatusCode().is2xxSuccessful()) return response;
+        CommissionCard card = validateCardOrThrow(artist, id);
 
-        CommissionCard card = (CommissionCard) response.getBody();
-        assert card != null;
         card.setTitle(dto.title);
         card.setDescription(dto.description);
         card.setPrice(dto.price);
@@ -65,27 +64,32 @@ public class CommissionCardService {
     }
 
     public ResponseEntity<?> deleteCard(User artist, Integer id) {
-        ResponseEntity<?> response = validateCard(artist, id);
-        if (!response.getStatusCode().is2xxSuccessful()) return response;
-
-        assert response.getBody() != null;
-        cardRepo.delete((CommissionCard) response.getBody());
+        CommissionCard card = validateCardOrThrow(artist, id);
+        cardRepo.delete(card);
         return ResponseEntity.ok(Map.of("message", "Commission card deleted"));
     }
 
-    private ResponseEntity<?> validateCard(User artist, Integer cardId) {
-        Optional<CommissionCard> cardOpt = cardRepo.findById(cardId);
-        if (cardOpt.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Card not found"));
-        }
+    public ResponseEntity<?> toggleCommissionStatus(Integer cardId, User artist) {
+        CommissionCard card = validateCardOrThrow(artist, cardId);
+        card.setOpen(!card.isOpen());
+        cardRepo.save(card);
 
-        CommissionCard card = cardOpt.get();
-        if (!card.getArtist().getUserId().equals(artist.getUserId())) {
-            return ResponseEntity.status(403).body(Map.of("error", "Not your card"));
-        }
-
-        return ResponseEntity.ok(card); // ถ้า validate ผ่าน return card ใน body
+        String status = card.isOpen() ? "opened" : "closed";
+        return ResponseEntity.ok(Map.of("message", "Commission card " + status));
     }
+    public CommissionCard validateCardOrThrow(User artist, Integer cardId) {
+        CommissionCard card = cardRepo.findById(cardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found"));
+        if (!card.getArtist().getUserId().equals(artist.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your card");
+        }
+        return card;
+    }
+
+
+
+
+
 
 }
 

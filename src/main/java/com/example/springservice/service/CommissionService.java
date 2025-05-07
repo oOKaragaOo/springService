@@ -29,7 +29,7 @@ public class CommissionService {
         commission.setArtist(artist);
         commission.setTitle(dto.title);
         commission.setDescription(dto.description);
-        commission.setPrice(dto.price);
+        commission.setPrice(String.valueOf(dto.price));
         commission.setDeadline(dto.deadline);
         commission.setStatus(Commission.Status.REQUESTED);
         commissionRepository.save(commission);

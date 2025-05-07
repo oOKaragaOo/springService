@@ -6,23 +6,36 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class CommissionCardResponseDTO {
-    public Integer cardId;
+    public Integer id;
     public String title;
     public String description;
-    public String price;;
-    public Integer estimatedDuration;
     public String sampleImageUrl;
+    public String price;
+    public Integer estimatedDuration;
     public Boolean open;
 
+    // 🔹 เพิ่ม artist info
+    public Integer artistId;
+    public String artistName;
+    public String artistProfilePicture;
+
     public CommissionCardResponseDTO(CommissionCard card) {
-        this.cardId = card.getCardId();
+        this.id = card.getId();
         this.title = card.getTitle();
         this.description = card.getDescription();
+        this.sampleImageUrl = card.getSampleImageUrl();
         this.price = card.getPrice();
         this.estimatedDuration = card.getEstimatedDuration();
-        this.sampleImageUrl = card.getSampleImageUrl();
         this.open = card.getOpen();
+
+        // ✅ inject artist info
+        if (card.getArtist() != null) {
+            this.artistId = card.getArtist().getUserId();
+            this.artistName = card.getArtist().getName();
+            this.artistProfilePicture = card.getArtist().getProfile_picture();
+        }
     }
 }
+
 
 

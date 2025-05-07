@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 @Getter @Setter
@@ -17,7 +16,7 @@ public class CommissionCard {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "card_id")
-    private Integer cardId;
+    private Integer Id;
 
     @ManyToOne
     @JoinColumn(name = "artist_id", nullable = false)
@@ -39,7 +38,7 @@ public class CommissionCard {
     private String sampleImageUrl;
 
     @Column(nullable = false)
-    private Boolean open = true;
+    private Boolean open ;
 
     @Column(name = "created_at")
     @CreationTimestamp
@@ -52,7 +51,13 @@ public class CommissionCard {
     @Column(name = "deadline")
     private LocalDate deadline;
 
+    public boolean isOpen() {
+        return open;
+    }
 
 
+//    public boolean isOpen() {
+//        return open;
+//    }
 }
 

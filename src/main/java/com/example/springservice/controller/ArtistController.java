@@ -68,10 +68,19 @@ public class ArtistController {
         return cardService.updateCard(artist, id, dto);
     }
 
+    @PutMapping("/commission-cards/{id}/toggle-status")
+    public ResponseEntity<?> toggleCommissionStatus(@PathVariable Integer id, HttpServletRequest request) {
+        System.out.println("--> ⚡ PUT /artist/commission-cards/{id}/toggle-status");
+        User artist = SessionUtil.requireSessionUser(userRepo, request);
+        return cardService.toggleCommissionStatus(id, artist);
+    }
+
     //======================================= 🛠️ D 🛠️ ======================================================//
     @DeleteMapping("/commission-cards/{id}")
     public ResponseEntity<?> deleteCard(@PathVariable Integer id, HttpServletRequest request) {
+        System.out.println("--> \uD83D\uDD25 DELETE /artist/commission-cards/{id}");
         User artist = SessionUtil.requireSessionUser(userRepo, request);
+
         return cardService.deleteCard(artist, id);
     }
 

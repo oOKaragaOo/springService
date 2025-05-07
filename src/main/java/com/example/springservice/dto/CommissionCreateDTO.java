@@ -8,7 +8,7 @@ public class CommissionCreateDTO {
     public Integer artistId;
     public String title;
     public String description;
-    public BigDecimal price;
+    public String price;
     public LocalDate deadline;
 }
 
