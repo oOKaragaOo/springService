@@ -5,20 +5,29 @@ import lombok.RequiredArgsConstructor;
 import com.example.springservice.dto.*;
 import com.example.springservice.entites.*;
 import com.example.springservice.repo.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CommissionService {
 
+
     private final CommissionRepository commissionRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+
+    @Autowired
+    private CommissionRepository commissionRepo;
+    @Autowired
+    private CommissionCardRepository cardRepo;
+    @Autowired
+    CommissionBriefRepository commissionBriefRepo;
+
 
     public CommissionResponseDTO requestCommission(CommissionCreateDTO dto, User customer) {
         User artist = userRepository.findById(dto.artistId)
@@ -96,6 +105,34 @@ public class CommissionService {
     public List<CommissionResponseDTO> getMyCommissions(User user) {
         List<Commission> list = commissionRepository.findByCustomerOrArtist(user, user);
         return list.stream().map(CommissionResponseDTO::new).toList();
+    }
+
+    public CommissionBriefDTO createCommissionRequest(CommissionBriefRequestDTO dto, User customer) {
+        CommissionCard card = cardRepo.findById(dto.cardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found"));
+
+        if (card.getArtist().getUserId().equals(customer.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot request your own commission card");
+        }
+
+        Commission com = new Commission();
+        com.setCustomer(customer);
+        com.setArtist(card.getArtist());
+        com.setTitle(card.getTitle());
+        com.setDescription(card.getDescription());
+        com.setPrice(card.getPrice());
+        com.setStatus(Commission.Status.REQUESTED);
+        commissionRepo.save(com);
+
+        CommissionBrief brief = new CommissionBrief();
+        brief.setCommission(com);
+        brief.setCustomer(customer);
+        brief.setFileUrl(dto.fileUrl);
+        brief.setFileType(dto.fileType);
+        brief.setDescription(dto.description);
+        commissionBriefRepo.save(brief);
+
+        return CommissionBriefDTO.fromEntity(brief);
     }
 
     private Commission findCommissionById(Integer id) {

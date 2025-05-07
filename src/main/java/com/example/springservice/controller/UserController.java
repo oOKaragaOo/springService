@@ -3,7 +3,6 @@ package com.example.springservice.controller;
 import com.example.springservice.*;
 import com.example.springservice.dto.*;
 import com.example.springservice.entites.*;
-import com.example.springservice.entites.enmap.Commission;
 import com.example.springservice.entites.enmap.FollowId;
 import com.example.springservice.repo.*;
 import com.example.springservice.service.*;
@@ -30,11 +29,9 @@ public class UserController {
     @Autowired
     private UserFollowsRepository userFollowsRepository;
     @Autowired
-    private CommissionRepository commissionRepo;
-    @Autowired
     private CommissionCardRepository cardRepo;
     @Autowired
-    CommissionBriefRepository commissionBriefRepo;
+    CommissionService commissionService;
     @Autowired
     NotificationService notificationService;
 
@@ -242,41 +239,28 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    // 📁 controller/UserController.java
     @PostMapping("/commissions/request")
-    public ResponseEntity<?> requestCommission(@RequestBody CommissionBriefRequestDTO dto, HttpServletRequest request) {
+    public ResponseEntity<?> requestCommission(
+            @RequestBody CommissionBriefRequestDTO dto,
+            HttpServletRequest request
+    ) {
         User customer = SessionUtil.requireSessionUser(userRepository, request);
+        CommissionBriefDTO brief = commissionService.createCommissionRequest(dto, customer);
 
-        Optional<CommissionCard> cardOpt = cardRepo.findById(dto.cardId);
-        if (cardOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Card not found"));
+        // 🛎️ ส่ง noti ให้ศิลปินหลังจากได้ brief กลับมา
+        cardRepo.findById(dto.cardId).ifPresent(card -> notificationService.sendNotiTo(
+                card.getArtist(),
+                "NEW_COMMISSION",
+                "📥 คำขอใหม่จาก " + customer.getName() + " เรื่อง: " + card.getTitle()
+        ));
 
-        CommissionCard card = cardOpt.get();
-
-        // 🟢 Create Commission
-        Commission com = new Commission();
-        com.setCustomer(customer);
-        com.setArtist(card.getArtist());
-        com.setTitle(card.getTitle());
-        com.setDescription(card.getDescription());
-        com.setPrice(card.getPrice());
-        com.setStatus(Commission.Status.REQUESTED);
-        commissionRepo.save(com);
-
-        // 🟢 Save CommissionBrief
-        CommissionBrief brief = new CommissionBrief();
-        brief.setCommission(com);
-        brief.setCustomer(customer);
-        brief.setFileUrl(dto.fileUrl);
-        brief.setFileType(dto.fileType);
-        brief.setDescription(dto.description);
-        commissionBriefRepo.save(brief);
-
-        // 🛎️ Noti ให้ศิลปิน
-        notificationService.sendNotiTo(card.getArtist(), "NEW_COMMISSION",
-                "📥 คำขอใหม่จาก " + customer.getName() + " เรื่อง: " + card.getTitle());
-
-        return ResponseEntity.ok(Map.of("message", "Commission request submitted", "id", com.getCommissionId()));
+        return ResponseEntity.ok(Map.of(
+                "message", "Commission request submitted",
+                "brief", brief
+        ));
     }
+
+
 
 
     private void applyUserUpdates(User existing, User update) {
