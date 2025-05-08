@@ -5,7 +5,7 @@ import com.example.springservice.entites.User;
 import com.example.springservice.repo.UserFollowsRepository;
 
 public class UserProfileDTO {
-//    public Integer user_id;
+    public Integer user_id;
     public String name;
     public String email;
     public String profile_picture;
@@ -17,7 +17,7 @@ public class UserProfileDTO {
     public Integer followerCount; // ✅
 
     public UserProfileDTO(User user) {
-//        this.user_id = user.getUserId();
+        this.user_id = user.getUserId();
         this.name = user.getName();
         this.email = user.getEmail();
         this.profile_picture = user.getProfile_picture();

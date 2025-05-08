@@ -259,9 +259,11 @@ public class UserController {
                 "brief", brief
         ));
     }
-
-
-
+    @GetMapping("/commissions/{id}")
+    public ResponseEntity<?> getMyCommissionDetail(@PathVariable Integer id, HttpServletRequest request) {
+        User user = SessionUtil.requireSessionUser(userRepository, request);
+        return ResponseEntity.ok(commissionService.getDetail(id, user));
+    }
 
     private void applyUserUpdates(User existing, User update) {
         if (isValid(update.getName())) {

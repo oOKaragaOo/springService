@@ -7,10 +7,13 @@ import com.example.springservice.entites.*;
 import com.example.springservice.repo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +54,50 @@ public class CommissionService {
     public List<CommissionResponseDTO> getMyCommissionsAsArtist(User artist) {
         List<Commission> list = commissionRepo.findByArtist(artist);
         return list.stream().map(CommissionResponseDTO::new).toList();
+    }
+    // 🟢 ศิลปินดูรายละเอียดงาน
+    public ResponseEntity<?> getCommissionDetailAsArtist(User artist, Integer commissionId) {
+        Commission com = getCommissionOrThrow(commissionId);
+        if (!com.getArtist().getUserId().equals(artist.getUserId()))
+            return ResponseEntity.status(403).body(Map.of("error", "Not your commission"));
+        return ResponseEntity.ok(new CommissionResponseDTO(com));
+    }
+
+    // ✅ Artist รับงาน
+    public ResponseEntity<?> acceptCommission(Integer commissionId, CommissionAcceptDTO dto, User artist) {
+        ResponseEntity<?> result = validateArtistRequestAccess(artist, commissionId);
+        if (!result.getStatusCode().is2xxSuccessful()) return result;
+
+        Commission commission = (Commission) result.getBody();
+        assert commission != null;
+        commission.setStatus(Commission.Status.ACCEPTED);
+        commission.setPrice(dto.agreedPrice);
+        commission.setDeadline(LocalDate.now().plusDays(dto.agreedDeadline));
+        commissionRepo.save(commission);
+
+        return ResponseEntity.ok(Map.of("message", "Commission accepted"));
+    }
+
+    // ❌ Artist ปฏิเสธงาน
+    public ResponseEntity<?> rejectCommission(Integer commissionId, User artist) {
+        ResponseEntity<?> result = validateArtistRequestAccess(artist, commissionId);
+        if (!result.getStatusCode().is2xxSuccessful()) return result;
+
+        Commission commission = (Commission) result.getBody();
+        assert commission != null;
+        commission.setStatus(Commission.Status.REJECTED);
+        commissionRepo.save(commission);
+
+        return ResponseEntity.ok(Map.of("message", "Commission rejected"));
+    }
+    // 🔍 ลูกค้าและศิลปินดูงานตัวเอง
+    public CommissionResponseDTO getDetail(Integer id, User user) {
+        Commission c = getCommissionOrThrow(id);
+        if (!c.getCustomer().getUserId().equals(user.getUserId()) &&
+                !c.getArtist().getUserId().equals(user.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized");
+        }
+        return new CommissionResponseDTO(c);
     }
 
     public CommissionResponseDTO respondToRequest(Integer id, Commission.Status status, User artist) {
@@ -98,16 +145,6 @@ public class CommissionService {
         return new CommissionResponseDTO(commission);
     }
 
-    // 🔍 ลูกค้าและศิลปินดูงานตัวเอง
-    public CommissionResponseDTO getDetail(Integer id, User user) {
-        Commission c = getCommissionOrThrow(id);
-        if (!c.getCustomer().getUserId().equals(user.getUserId()) &&
-                !c.getArtist().getUserId().equals(user.getUserId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized");
-        }
-        return new CommissionResponseDTO(c);
-    }
-
     private Commission getCommissionOrThrow(Integer id) {
         return commissionRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Commission not found"));
@@ -150,5 +187,20 @@ public class CommissionService {
         return commissionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Commission not found"));
     }
+
+    private ResponseEntity<?> validateArtistRequestAccess(User artist, Integer commissionId) {
+        Commission commission = getCommissionOrThrow(commissionId);
+
+        if (!commission.getArtist().getUserId().equals(artist.getUserId())) {
+            return ResponseEntity.status(403).body(Map.of("error", "Not your commission"));
+        }
+
+        if (!commission.getStatus().equals(Commission.Status.REQUESTED)) {
+            return ResponseEntity.status(400).body(Map.of("error", "Invalid status"));
+        }
+
+        return ResponseEntity.ok(commission);
+    }
+
 }
 
